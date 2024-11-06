@@ -6,7 +6,7 @@
       {
         "id": "c403f5dcdf541d8a",
         "type": "tabs",
-        "dimension": 24.352750809061487,
+        "dimension": 33.02845528455284,
         "children": [
           {
             "id": "442fe09c98f48c32",
@@ -29,7 +29,7 @@
       {
         "id": "0dda31bfb5b49f42",
         "type": "tabs",
-        "dimension": 75.64724919093851,
+        "dimension": 66.97154471544715,
         "children": [
           {
             "id": "82fbf40ec5f469f0",
@@ -37,12 +37,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README.md",
-                "mode": "source",
+                "file": "exploitation/web/vulns/idor.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "idor"
             }
           }
         ]
@@ -101,7 +101,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 200,
+    "collapsed": true
   },
   "right": {
     "id": "cf46f7de2a81028b",
@@ -117,7 +118,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "exploitation/web/vulns/host-header-injection.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +128,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Backlinks for host-header-injection"
             }
           },
           {
@@ -136,12 +137,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "README.md",
+                "file": "exploitation/web/vulns/host-header-injection.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from README"
+              "title": "Outgoing links from host-header-injection"
             }
           },
           {
@@ -163,10 +164,10 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md"
+                "file": "exploitation/web/vulns/host-header-injection.md"
               },
               "icon": "lucide-list",
-              "title": "Outline of README"
+              "title": "Outline of host-header-injection"
             }
           }
         ]
@@ -186,41 +187,49 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ae44d731563c2d80",
+  "active": "442fe09c98f48c32",
   "lastOpenFiles": [
-    "exploitation/web/bypass/waf.md",
+    "Pasted image 20241106114826.png",
+    "exploitation/web/vulns/idor.md",
     "README.md",
+    "exploitation/web/cms/wordpress.md",
+    "exploitation/web/vulns/cache-poisoning.md",
+    "exploitation/web/helpers/wp-cve-boilerplate.md",
+    "exploitation/web/cms",
+    "exploitation/web/helpers/sms-verification.md",
+    "exploitation/web/helpers/web-technologies.md",
+    "exploitation/web/helpers",
+    "recon/javascript-analysis.md",
+    "exploitation/web/vulns/xxe.md",
+    "exploitation/web/vulns/xss.md",
+    "exploitation/web/vulns/timing-attacks.md",
+    "exploitation/web/vulns/sqli.md",
+    "exploitation/web/vulns/ssrf.md",
+    "exploitation/web/vulns/Pasted image 20241106113120.png",
+    "exploitation/web/vulns/ssti.md",
+    "exploitation/web/vulns/rce.md",
+    "exploitation/web/vulns/request-smuggling.md",
+    "exploitation/web/vulns/Pasted image 20241106111249.png",
+    "exploitation/web/vulns/prototype-pollution.md",
+    "exploitation/web/vulns/path-traversal.md",
+    "exploitation/web/vulns/parameter-pollution.md",
+    "exploitation/web/vulns/open-redirect.md",
+    "().md",
+    "exploitation/web/vulns/lfi.md",
+    "exploitation/web/vulns/iis.md",
+    "exploitation/web/vulns/host-header-injection.md",
+    "exploitation/web/vulns/deserialization.md",
+    "exploitation/web/vulns/Pasted image 20241106102337.png",
+    "exploitation/web/vulns",
     "exploitation/web/authentication/Pasted image 20241106095351.png",
-    "exploitation/web/bypass/403.md",
     "exploitation/web/bypass",
-    "exploitation/web/cloud/gpc.md",
-    "exploitation/web/cloud/azure.md",
-    "exploitation/web/cloud/aws.md",
     "exploitation/web/cloud",
-    "exploitation/web/authentication/oauth.md",
     "Pasted image 20241106095351.png",
-    "exploitation/web/authentication/2fa.md",
-    "exploitation/web/authentication/saml.md",
-    "exploitation/web/authentication/jwt.md",
     "Pasted image 20241106094735.png",
     "exploitation/web/authentication",
     "exploitation/web",
     "exploitation",
-    "recon/third-part.md",
-    "recon/param-discovery.md",
-    "recon/fuzzing.md",
-    "recon/spidering.md",
-    "recon/katana.md",
-    "recon/dorking.md",
-    "recon/screenshot.md",
-    "recon/probing.md",
-    "recon/port-scan.md",
-    "recon/subdomain/active.md",
-    "recon/subdomain/passive.md",
     "recon/subdomain",
-    "recon/company-information.md",
-    "recon/whois.md",
-    "recon/asn-cidr.md",
     "recon"
   ]
 }

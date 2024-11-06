@@ -1,0 +1,74 @@
+# Javascript
+
+## Linters
+
+- [JSHint](https://jshint.com/)
+
+## Download
+
+- getJS
+    
+    Download all js files for each site [https://github.com/003random/getJS](https://github.com/003random/getJS)
+    
+- JSScanner
+    
+    Download all js files for each site, beautify and run linkfinder: [https://github.com/dark-warlord14/JSScanner](https://github.com/dark-warlord14/JSScanner)
+    
+
+## Way Back Machine
+
+Premise: Javascript files often gets changed, an attaker may find sensitive stuff in an older version of a JS file that is not alive anymore.
+
+```
+# https://github.com/jsvine/waybackpack
+
+# Clean known paths or JS files that are going to be useless in analysis.
+cat all_js_files.txt | grep -v "jquery\|wp-includes\|wp-content\|bootstrap" >> js_to_download.txt
+
+cat js_to_download.txt | xargs -I@ sh -c "waybackpack @ -d wayback_javascripts/"
+
+# Feed wayback_javascripts/ folder into a secret finder
+```
+
+## Analyze
+
+### Secrets
+
+```
+# https://github.com/BishopFox/jsluice
+jsluice urls
+jsluice secrets --patterns=secrets.json
+```
+
+```
+semgrep --config "p/secrets"o
+```
+
+```
+https://github.com/mazen160/secrets-patterns-db
+```
+
+### Links
+
+```
+# https://github.com/xnl-h4ck3r/xnLinkFinder
+python3 xnLinkFinder.py -i https://example.com/1.js -o cli
+python3 xnLinkFinder.py -i '*.js' -o cli
+```
+
+## Sourcemaps
+
+Run map js files in unmap to get a good js file
+
+```
+# https://github.com/denandz/sourcemapper
+./sourcemapper -output dhubsrc -url https://hub.docker.com/public/js/client.356c14916fb23f85707f.js.map
+```
+
+## Automate JS discovery
+
+- [http://blog.r0b.re/hacking/pentesting/bugbounty/recon/web/js/2020/06/30/scripthunter-automated-js-discovery.html](http://blog.r0b.re/hacking/pentesting/bugbounty/recon/web/js/2020/06/30/scripthunter-automated-js-discovery.html)
+
+## Unminify and deobfuscate
+
+- [https://gist.github.com/0xdevalias/d8b743efb82c0e9406fc69da0d6c6581#deobfuscating--unminifying-obfuscated-web-app-code](https://gist.github.com/0xdevalias/d8b743efb82c0e9406fc69da0d6c6581#deobfuscating--unminifying-obfuscated-web-app-code)
