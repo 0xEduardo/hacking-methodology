@@ -15,13 +15,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "SUMMARY.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "pinned": true,
               "icon": "lucide-file",
-              "title": "SUMMARY"
+              "title": "README"
             }
           }
         ]
@@ -37,12 +37,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "exploitation/web/bypass/waf.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "waf"
+              "title": "README"
             }
           }
         ]
@@ -101,8 +101,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "cf46f7de2a81028b",
@@ -118,7 +117,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "SUMMARY.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -128,7 +127,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for SUMMARY"
+              "title": "Backlinks for README"
             }
           },
           {
@@ -137,12 +136,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "SUMMARY.md",
+                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from SUMMARY"
+              "title": "Outgoing links from README"
             }
           },
           {
@@ -164,10 +163,10 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "SUMMARY.md"
+                "file": "README.md"
               },
               "icon": "lucide-list",
-              "title": "Outline of SUMMARY"
+              "title": "Outline of README"
             }
           }
         ]
@@ -187,11 +186,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "442fe09c98f48c32",
+  "active": "ae44d731563c2d80",
   "lastOpenFiles": [
-    "exploitation/web/authentication/Pasted image 20241106095351.png",
     "exploitation/web/bypass/waf.md",
-    "SUMMARY.md",
+    "README.md",
+    "exploitation/web/authentication/Pasted image 20241106095351.png",
     "exploitation/web/bypass/403.md",
     "exploitation/web/bypass",
     "exploitation/web/cloud/gpc.md",
