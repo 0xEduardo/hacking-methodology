@@ -1,8 +1,8 @@
 ###### Hacking Methodology
 ```
-Highly recommended to be opened with Obsidian.
+It is highly recommended to open this document with Obsidian.
 
-Everything written in here and in the following pages was acquired by reading articles, books, watching videos and talks. None of this is exclusive. Feel free to copy.
+All the information here and on the following pages was gathered through reading articles and books, as well as watching videos and talks. None of this content is exclusive, so feel free to copy and share it freely.
 ```
 ![obsidian example](obsidian-example.png)
 
