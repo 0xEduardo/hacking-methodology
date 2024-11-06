@@ -4,7 +4,8 @@ Highly recommended to be opened with Obsidian.
 
 Everything written in here and in the following pages was acquired by reading articles, books, watching videos and talks. None of this is exclusive. Feel free to copy.
 ```
-![[Pasted image 20241106114826.png]]
+![[obisidian-example.png]]
+
 #### Recon
 [ASN/CIDR](recon/asn-cidr.md)
 [Whois](recon/whois.md)
