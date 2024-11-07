@@ -6,7 +6,7 @@
       {
         "id": "c403f5dcdf541d8a",
         "type": "tabs",
-        "dimension": 33.02845528455284,
+        "dimension": 25.485436893203882,
         "children": [
           {
             "id": "442fe09c98f48c32",
@@ -29,7 +29,7 @@
       {
         "id": "0dda31bfb5b49f42",
         "type": "tabs",
-        "dimension": 66.97154471544715,
+        "dimension": 74.51456310679612,
         "children": [
           {
             "id": "82fbf40ec5f469f0",
@@ -37,12 +37,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "exploitation/web/vulns/idor.md",
-                "mode": "preview",
+                "file": "exploitation/web/helpers/brute-force.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "idor"
+              "title": "brute-force"
             }
           }
         ]
@@ -118,7 +118,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "exploitation/web/vulns/host-header-injection.md",
+                "file": "exploitation/web/helpers/brute-force.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -128,7 +128,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for host-header-injection"
+              "title": "Backlinks for brute-force"
             }
           },
           {
@@ -187,40 +187,41 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "442fe09c98f48c32",
+  "active": "82fbf40ec5f469f0",
   "lastOpenFiles": [
+    "README.md",
+    "exploitation/web/helpers/brute-force.md",
+    "exploitation/web/vulns/xslt-injection.md",
+    "exploitation/web/vulns/ssi.md",
+    "exploitation/web/vulns/ssti.md",
+    "exploitation/web/vulns/ssrf.md",
+    "exploitation/web/vulns/sqli.md",
+    "exploitation/web/vulns/deserialization.md",
+    "exploitation/web/vulns/whitebox-pentesting.md",
+    "exploitation/web/vulns/prototype-pollution.md",
+    "exploitation/web/vulns/timing-attacks-race-conditions.md",
+    "exploitation/web/vulns/timing-attacks.md",
+    "exploitation/web/vulns/pdf-generation.md",
+    "exploitation/web/vulns/dns-rebinding.md",
+    "exploitation/web/vulns/request-smuggling.md",
+    "exploitation/web/vulns/crlf.md",
+    "exploitation/web/vulns/session-puzzling.md",
+    "exploitation/web/vulns/host-header-injection.md",
+    "exploitation/web/vulns/cache-poisoning.md",
+    "exploitation/web/vulns/http-tls-attacks.md",
+    "exploitation/web/vulns/xss.md",
+    "exploitation/web/vulns/cors.md",
+    "exploitation/web/vulns/csrf.md",
+    "exploitation/web/authentication/saml.md",
+    "exploitation/web/authentication/oauth.md",
+    "exploitation/web/authentication/jwt.md",
     "obsidian-example.png",
     "obisidian-example.png",
     "Pasted image 20241106114826.png",
-    "exploitation/web/vulns/idor.md",
-    "README.md",
-    "exploitation/web/cms/wordpress.md",
-    "exploitation/web/vulns/cache-poisoning.md",
-    "exploitation/web/helpers/wp-cve-boilerplate.md",
     "exploitation/web/cms",
-    "exploitation/web/helpers/sms-verification.md",
-    "exploitation/web/helpers/web-technologies.md",
     "exploitation/web/helpers",
-    "recon/javascript-analysis.md",
-    "exploitation/web/vulns/xxe.md",
-    "exploitation/web/vulns/xss.md",
-    "exploitation/web/vulns/timing-attacks.md",
-    "exploitation/web/vulns/sqli.md",
-    "exploitation/web/vulns/ssrf.md",
     "exploitation/web/vulns/Pasted image 20241106113120.png",
-    "exploitation/web/vulns/ssti.md",
-    "exploitation/web/vulns/rce.md",
-    "exploitation/web/vulns/request-smuggling.md",
     "exploitation/web/vulns/Pasted image 20241106111249.png",
-    "exploitation/web/vulns/prototype-pollution.md",
-    "exploitation/web/vulns/path-traversal.md",
-    "exploitation/web/vulns/parameter-pollution.md",
-    "exploitation/web/vulns/open-redirect.md",
-    "().md",
-    "exploitation/web/vulns/lfi.md",
-    "exploitation/web/vulns/iis.md",
-    "exploitation/web/vulns/host-header-injection.md",
-    "exploitation/web/vulns/deserialization.md",
     "exploitation/web/vulns/Pasted image 20241106102337.png",
     "exploitation/web/vulns",
     "exploitation/web/authentication/Pasted image 20241106095351.png",

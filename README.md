@@ -40,7 +40,7 @@ All the information here and on the following pages was gathered through reading
 [GPC](exploitation/web/cloud/gpc.md)
 ###### CMS
 [Wordpress](exploitation/web/cms/wordpress.md)
-
+[Others](exploitation/web/cms/others.md)
 ###### Vulnerabilities
 [Clickjacking](exploitation/web/vulns/clickjacking.md)
 [Command Injection](exploitation/web/vulns/command-injection.md)
@@ -50,25 +50,38 @@ All the information here and on the following pages was gathered through reading
 [CSRF](exploitation/web/vulns/csrf.md)
 [Deserialization](exploitation/web/vulns/deserialization.md)
 [Host Header Injection](exploitation/web/vulns/host-header-injection.md)
+[HTTP/TLS Attacks](exploitation/web/vulns/http-tls-attacks.md)
 [IDOR](exploitation/web/vulns/idor.md)
 [IIS](exploitation/web/vulns/iis.md)
+[LDAP Injection](exploitation/web/vulns/ldap-injection.md)
 [LFI](exploitation/web/vulns/lfi.md)
+[NoSQL](exploitation/web/vulns/nosql.md)
 [Open Redirect](exploitation/web/vulns/open-redirect.md)
 [Parameter Pollution](exploitation/web/vulns/parameter-pollution.md)
 [Path Traversal](exploitation/web/vulns/path-traversal.md)
+[PDF Generation Vulnerabilities](exploitation/web/vulns/pdf-generation.md)
 [Prototype Pollution](exploitation/web/vulns/prototype-pollution.md)
 [Request Smuggling](exploitation/web/vulns/request-smuggling.md)
 [RCE](exploitation/web/vulns/rce.md)
+[Session Puzzling](exploitation/web/vulns/session-puzzling.md)
+[SSI](exploitation/web/vulns/ssi.md)
 [SSTI](exploitation/web/vulns/ssti.md)
 [SSRF](exploitation/web/vulns/ssrf.md)
 [SQLi](exploitation/web/vulns/sqli.md)
-[Timing Attacks](exploitation/web/vulns/timing-attacks.md)
+[Timing Attacks and Race Condition](exploitation/web/vulns/timing-attacks-race-conditions.md)
+[X-Path Injection](exploitation/web/vulns/x-path-injection.md)
+[XSLT Injection](exploitation/web/vulns/xslt-injection.md)
 [XSS](exploitation/web/vulns/xss.md)
 [XXE](exploitation/web/vulns/xxe.md)
 [Web Cache Poisoning](exploitation/web/vulns/cache-poisoning.md)
+WebSocket Attacks (XSS, SQLi, Cross-Site WebSocket Hijacking (CSWH)) [Planned]
+[Whitebox Pentesting](exploitation/web/vulns/whitebox-pentesting.md)
 ###### Helpers
 [Brute Force](exploitation/web/helpers/brute-force.md)
 [Web Technologies](exploitation/web/helpers/web-technologies.md)
 [SMS Verification](exploitation/web/helpers/sms-verification.md)
 [Wordpress CVE Boilerplates](exploitation/web/helpers/wp-cve-boilerplate.md)
+[Burp Suite](exploitation/web/helpers/burp-suite.md)
+##### Network and Services
+
 
