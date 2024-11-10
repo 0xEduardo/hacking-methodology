@@ -6,6 +6,19 @@ All the information here and on the following pages was gathered through reading
 ```
 ![obsidian example](obsidian-example.png)
 
+#### Infra
+##### Recon
+[ASN/CIDR](infra/recon/asn-cidr.md)
+[Whois](infra/recon/whois.md)
+[Company Information](infra/recon/company-information.md)
+[Port Scan](infra/recon/port-scan.md)
+[Enumerating Services](infra/recon/services.md)
+##### Exploitation
+###### Services
+[Attacking Services](exploitation/infra/attacking-services.md)
+[Password Attacks](exploitation/infra/password-attacks.md)
+##### Helpers
+[Pivoting, Tunneling, and Port Forwarding](infra/helpers/pivoting.md)
 #### Web
 ##### Recon
 [Subdomain Passive](web/recon/subdomain/passive.md)
@@ -77,19 +90,6 @@ WebSocket Attacks (XSS, SQLi, Cross-Site WebSocket Hijacking (CSWH)) {Planned}
 [Burp Suite](web/helpers/burp-suite.md)
 [File Transfer](web/helpers/file-transfer.md)
 [Shells and Payloads](web/helpers/shells-and-payloads.md)
-#### Infra
-##### Recon
-[ASN/CIDR](infra/recon/asn-cidr.md)
-[Whois](infra/recon/whois.md)
-[Company Information](infra/recon/company-information.md)
-[Port Scan](infra/recon/port-scan.md)
-[Enumerating Services](infra/recon/services.md)
-##### Exploitation
-###### Services
-[Attacking Services](exploitation/infra/attacking-services.md)
-[Password Attacks](exploitation/infra/password-attacks.md)
-##### Helpers
-[Pivoting, Tunneling, and Port Forwarding](infra/helpers/pivoting.md)
 #### Active Directory
 ##### Recon
 [Active Directory Enumeration](active-directory/recon/enumeration.md)
