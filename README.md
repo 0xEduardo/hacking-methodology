@@ -6,82 +6,95 @@ All the information here and on the following pages was gathered through reading
 ```
 ![obsidian example](obsidian-example.png)
 
-#### Recon
-[ASN/CIDR](recon/asn-cidr.md)
-[Whois](recon/whois.md)
-[Company Information](recon/company-information.md)
-###### Subdomain Enumeration
-[Subdomain Passive](recon/subdomain/passive.md)
-[Subdomain Active](recon/subdomain/active.md)
-
-[Port Scan](recon/port-scan.md)
-[Probing](recon/probing.md)
-[Screenshot](recon/screenshot.md)
-###### Content Discovery
-[Dorking](recon/dorking.md)
-[Spidering](recon/spidering.md)
-[Fuzzing](recon/fuzzing.md)
-[Param Discovery](recon/param-discovery.md)
-[Javascript Analysis](recon/javascript-analysis.md)
-[Third Part](recon/third-part.md)
-#### Exploitation
-##### Web
+#### Web
+##### Recon
+[Subdomain Passive](web/recon/subdomain/passive.md)
+[Subdomain Active](web/recon/subdomain/active.md)
+[Probing](web/recon/probing.md)
+[Screenshot](web/recon/screenshot.md)
+[Dorking](web/recon/dorking.md)
+[Spidering](web/recon/spidering.md)
+[Fuzzing](web/recon/fuzzing.md)
+[Param Discovery](web/recon/param-discovery.md)
+[Javascript Analysis](web/recon/javascript-analysis.md)
+[Third Part](web/recon/third-part.md)
+##### Exploitation
 ###### Authentication
-[JWT](exploitation/web/authentication/jwt.md)
-[SAML](exploitation/web/authentication/saml.md)
-[2FA](exploitation/web/authentication/2fa.md)
-[OAuth](exploitation/web/authentication/oauth.md)
+[JWT](web/exploitation/authentication/jwt.md)
+[SAML](web/exploitation/authentication/saml.md)
+[2FA](web/exploitation/authentication/2fa.md)
+[OAuth](web/exploitation/authentication/oauth.md)
 ###### Bypass
-[403](exploitation/web/bypass/403.md)
-[WAF](exploitation/web/bypass/waf.md)
+[403](web/exploitation/bypass/403.md)
+[WAF](web/exploitation/bypass/waf.md)
 ###### Cloud
-[AWS](exploitation/web/cloud/aws.md)
-[Azure](exploitation/web/cloud/azure.md)
-[GPC](exploitation/web/cloud/gpc.md)
+[AWS](web/exploitation/cloud/aws.md)
+[Azure](web/exploitation/cloud/azure.md)
+[GPC](web/exploitation/cloud/gpc.md)
 ###### CMS
-[Wordpress](exploitation/web/cms/wordpress.md)
-[Others](exploitation/web/cms/others.md)
+[Wordpress](web/exploitation/cms/wordpress.md)
+[Others](web/exploitation/cms/others.md)
 ###### Vulnerabilities
-[Clickjacking](exploitation/web/vulns/clickjacking.md)
-[Command Injection](exploitation/web/vulns/command-injection.md)
-[Cookie Based Attacks](exploitation/web/vulns/cookie-based-attacks.md)
-[CORS](exploitation/web/vulns/cors.md)
-[CRLF](exploitation/web/vulns/crlf.md)
-[CSRF](exploitation/web/vulns/csrf.md)
-[Deserialization](exploitation/web/vulns/deserialization.md)
-[Host Header Injection](exploitation/web/vulns/host-header-injection.md)
-[HTTP/TLS Attacks](exploitation/web/vulns/http-tls-attacks.md)
-[IDOR](exploitation/web/vulns/idor.md)
-[IIS](exploitation/web/vulns/iis.md)
-[LDAP Injection](exploitation/web/vulns/ldap-injection.md)
-[LFI](exploitation/web/vulns/lfi.md)
-[NoSQL](exploitation/web/vulns/nosql.md)
-[Open Redirect](exploitation/web/vulns/open-redirect.md)
-[Parameter Pollution](exploitation/web/vulns/parameter-pollution.md)
-[Path Traversal](exploitation/web/vulns/path-traversal.md)
-[PDF Generation Vulnerabilities](exploitation/web/vulns/pdf-generation.md)
-[Prototype Pollution](exploitation/web/vulns/prototype-pollution.md)
-[Request Smuggling](exploitation/web/vulns/request-smuggling.md)
-[RCE](exploitation/web/vulns/rce.md)
-[Session Puzzling](exploitation/web/vulns/session-puzzling.md)
-[SSI](exploitation/web/vulns/ssi.md)
-[SSTI](exploitation/web/vulns/ssti.md)
-[SSRF](exploitation/web/vulns/ssrf.md)
-[SQLi](exploitation/web/vulns/sqli.md)
-[Timing Attacks and Race Condition](exploitation/web/vulns/timing-attacks-race-conditions.md)
-[X-Path Injection](exploitation/web/vulns/x-path-injection.md)
-[XSLT Injection](exploitation/web/vulns/xslt-injection.md)
-[XSS](exploitation/web/vulns/xss.md)
-[XXE](exploitation/web/vulns/xxe.md)
-[Web Cache Poisoning](exploitation/web/vulns/cache-poisoning.md)
-WebSocket Attacks (XSS, SQLi, Cross-Site WebSocket Hijacking (CSWH)) [Planned]
-[Whitebox Pentesting](exploitation/web/vulns/whitebox-pentesting.md)
-###### Helpers
-[Brute Force](exploitation/web/helpers/brute-force.md)
-[Web Technologies](exploitation/web/helpers/web-technologies.md)
-[SMS Verification](exploitation/web/helpers/sms-verification.md)
-[Wordpress CVE Boilerplates](exploitation/web/helpers/wp-cve-boilerplate.md)
-[Burp Suite](exploitation/web/helpers/burp-suite.md)
-##### Network and Services
+[Clickjacking](web/exploitation/vulns/clickjacking.md)
+[Command Injection](web/exploitation/vulns/command-injection.md)
+[Cookie Based Attacks](web/exploitation/vulns/cookie-based-attacks.md)
+[CORS](web/exploitation/vulns/cors.md)
+[CRLF](web/exploitation/vulns/crlf.md)
+[CSRF](web/exploitation/vulns/csrf.md)
+[Deserialization](web/exploitation/vulns/deserialization.md)
+[Host Header Injection](web/exploitation/vulns/host-header-injection.md)
+[HTTP/TLS Attacks](web/exploitation/vulns/http-tls-attacks.md)
+[IDOR](web/exploitation/vulns/idor.md)
+[IIS](web/exploitation/vulns/iis.md)
+[LDAP Injection](web/exploitation/vulns/ldap-injection.md)
+[LFI](web/exploitation/vulns/lfi.md)
+[NoSQL](web/exploitation/vulns/nosql.md)
+[Open Redirect](web/exploitation/vulns/open-redirect.md)
+[Parameter Pollution](web/exploitation/vulns/parameter-pollution.md)
+[Path Traversal](web/exploitation/vulns/path-traversal.md)
+[PDF Generation Vulnerabilities](web/exploitation/vulns/pdf-generation.md)
+[Prototype Pollution](web/exploitation/vulns/prototype-pollution.md)
+[Request Smuggling](web/exploitation/vulns/request-smuggling.md)
+[RCE](web/exploitation/vulns/rce.md)
+[Session Puzzling](web/exploitation/vulns/session-puzzling.md)
+[SSI](web/exploitation/vulns/ssi.md)
+[SSTI](web/exploitation/vulns/ssti.md)
+[SSRF](web/exploitation/vulns/ssrf.md)
+[SQLi](web/exploitation/vulns/sqli.md)
+[Timing Attacks and Race Condition](web/exploitation/vulns/timing-attacks-race-conditions.md)
+[X-Path Injection](web/exploitation/vulns/x-path-injection.md)
+[XSLT Injection](web/exploitation/vulns/xslt-injection.md)
+[XSS](web/exploitation/vulns/xss.md)
+[XXE](web/exploitation/vulns/xxe.md)
+[Web Cache Poisoning](web/exploitation/vulns/cache-poisoning.md)
+WebSocket Attacks (XSS, SQLi, Cross-Site WebSocket Hijacking (CSWH)) {Planned}
+[Whitebox Pentesting](web/exploitation/vulns/whitebox-pentesting.md)
+##### Helpers
+[Brute Force](web/helpers/brute-force.md)
+[Web Technologies](web/helpers/web-technologies.md)
+[SMS Verification](web/helpers/sms-verification.md)
+[Wordpress CVE Boilerplates](web/helpers/wp-cve-boilerplate.md)
+[Burp Suite](web/helpers/burp-suite.md)
+[File Transfer](web/helpers/file-transfer.md)
+[Shells and Payloads](web/helpers/shells-and-payloads.md)
+#### Infra
+##### Recon
+[ASN/CIDR](infra/recon/asn-cidr.md)
+[Whois](infra/recon/whois.md)
+[Company Information](infra/recon/company-information.md)
+[Port Scan](infra/recon/port-scan.md)
+[Enumerating Services](infra/recon/services.md)
+##### Exploitation
+###### Services
+[Attacking Services](exploitation/infra/attacking-services.md)
+[Password Attacks](exploitation/infra/password-attacks.md)
+##### Helpers
+[Pivoting, Tunneling, and Port Forwarding](infra/helpers/pivoting.md)
+#### Active Directory
+##### Recon
+[Active Directory Enumeration](active-directory/recon/enumeration.md)
+##### Exploitation
+##### Helpers
+[Tools](exploitation/ad/tools.md)
 
 
