@@ -19,6 +19,8 @@ All the information here and on the following pages was gathered through reading
 [Password Attacks](exploitation/infra/password-attacks.md)
 ##### Helpers
 [Pivoting, Tunneling, and Port Forwarding](infra/helpers/pivoting.md)
+[Linux Privilege Escalation](infra/helpers/linux-privesc.md)
+[Windows Privilege Escalation](infra/helpers/windows-privesc.md)
 #### Web
 ##### Recon
 [Subdomain Passive](web/recon/subdomain/passive.md)

@@ -37,12 +37,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "web/exploitation/authentication/jwt.md",
+                "file": "infra/helpers/linux-privesc.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "jwt"
+              "title": "linux-privesc"
             }
           }
         ]
@@ -118,7 +118,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "infra/helpers/linux-privesc.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -128,7 +128,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Backlinks for linux-privesc"
             }
           },
           {
@@ -187,10 +187,14 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "442fe09c98f48c32",
+  "active": "e1867c9395ebe89d",
   "lastOpenFiles": [
-    "web/exploitation/authentication/jwt.md",
     "README.md",
+    "infra/helpers/windows-privesc.md",
+    "infra/helpers/lwindows-privesc.md",
+    "infra/helpers/linux-privesc.md",
+    "active-directory/recon/enumeration.md",
+    "web/exploitation/authentication/jwt.md",
     "infra/recon/services.md",
     "web/helpers/wp-cve-boilerplate.md",
     "web/helpers/web-technologies.md",
@@ -211,16 +215,12 @@
     "active-directory/helpers/tools.md",
     "active-directory/helpers",
     "active-directory/tools.md",
-    "active-directory/recon/enumeration.md",
     "active-directory/recon",
     "infra/recon/whois.md",
     "infra/recon/third-part.md",
     "infra/recon/company-information.md",
     "infra/recon/asn-cidr.md",
     "infra/recon",
-    "web/recon/spidering.md",
-    "web/recon/screenshot.md",
-    "web/recon/probing.md",
     "web/recon/subdomain",
     "web/exploitation/vulns/Pasted image 20241106113120.png",
     "web/exploitation/vulns/Pasted image 20241106111249.png",
