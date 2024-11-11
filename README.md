@@ -1,7 +1,3 @@
-```bash
-xfreerdp /v:10.129.146.69 /pth:0E14B9D6330BF16C30B1924111104824 /u:administrator
-```
-
 ###### Hacking Methodology
 ```
 It is highly recommended to open this document with Obsidian.
