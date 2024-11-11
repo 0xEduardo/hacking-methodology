@@ -92,11 +92,5 @@ WebSocket Attacks (XSS, SQLi, Cross-Site WebSocket Hijacking (CSWH)) {Planned}
 [Burp Suite](web/helpers/burp-suite.md)
 [File Transfer](web/helpers/file-transfer.md)
 [Shells and Payloads](web/helpers/shells-and-payloads.md)
-#### Active Directory
-##### Recon
-[Active Directory Enumeration](active-directory/recon/enumeration.md)
-##### Exploitation
-##### Helpers
-[Tools](exploitation/ad/tools.md)
 
 

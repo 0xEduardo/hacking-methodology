@@ -35,14 +35,10 @@
             "id": "e1867c9395ebe89d",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "infra/helpers/linux-privesc.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "linux-privesc"
+              "title": "New tab"
             }
           }
         ]
@@ -118,7 +114,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "infra/helpers/linux-privesc.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -128,7 +123,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for linux-privesc"
+              "title": "Backlinks"
             }
           },
           {
@@ -190,10 +185,12 @@
   "active": "e1867c9395ebe89d",
   "lastOpenFiles": [
     "README.md",
+    "active-directory/recon/powerview.md",
+    "active-directory/recon/ldap.md",
+    "active-directory/recon/enumeration.md",
+    "infra/helpers/linux-privesc.md",
     "infra/helpers/windows-privesc.md",
     "infra/helpers/lwindows-privesc.md",
-    "infra/helpers/linux-privesc.md",
-    "active-directory/recon/enumeration.md",
     "web/exploitation/authentication/jwt.md",
     "infra/recon/services.md",
     "web/helpers/wp-cve-boilerplate.md",
@@ -218,8 +215,6 @@
     "active-directory/recon",
     "infra/recon/whois.md",
     "infra/recon/third-part.md",
-    "infra/recon/company-information.md",
-    "infra/recon/asn-cidr.md",
     "infra/recon",
     "web/recon/subdomain",
     "web/exploitation/vulns/Pasted image 20241106113120.png",
