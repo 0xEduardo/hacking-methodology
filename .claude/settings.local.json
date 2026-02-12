@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/eduardofaria/Developer/hacking-methodology/hacktricks log --oneline)",
+      "Bash(git -C /Users/eduardofaria/Developer/hacking-methodology/hacktricks remote -v)",
+      "Bash(ls:*)"
+    ]
+  }
+}
