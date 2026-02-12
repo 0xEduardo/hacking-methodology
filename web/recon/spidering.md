@@ -176,6 +176,92 @@ api.target.com [CNAME] [api-gateway.amazonaws.com]
 mail.target.com [MX] [mail.target.com]
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform web spidering/crawling reconnaissance.
+
+### Phase 1: Setup
+1. Obtain the list of alive hosts from [probing](probing.md) results (`alive.txt`)
+2. Define crawling scope -- restrict to in-scope domains only using regex patterns
+3. Determine if the target is a JavaScript-heavy SPA (React, Angular, Vue) -- if yes, headless mode is required
+4. Set appropriate rate limits to avoid WAF triggers or service disruption (`-rl 100` in katana)
+
+### Phase 2: Execution
+1. Run headless crawling with katana (primary crawler):
+   ```
+   cat hosts.txt | katana -jc -kf all -d 3 -ef png,jpg,jpeg,css,gif,ttf,woff,woff2,svg,eot -o katana_results.txt
+   ```
+   For SPAs, add `-headless` flag for full JavaScript rendering
+2. Run lightweight crawling with gospider for additional coverage:
+   ```
+   gospider -S hosts.txt -c 5 -d 2 -t 3 --other-source -o gospider_output/
+   ```
+3. Run historical URL discovery in parallel:
+   ```
+   echo "<TARGET_DOMAIN>" | gau --subs --o gau_urls.txt
+   waymore -i <TARGET_DOMAIN> -mode U -oU waymore_urls.txt
+   ```
+4. Resolve DNS records for discovered hosts:
+   ```
+   dnsx -retry 3 -a -aaaa -cname -ns -ptr -mx -soa -resp -silent -l subdomains.txt > dns_records.txt
+   ```
+
+### Phase 3: Analysis
+1. Merge and deduplicate all crawling results:
+   ```
+   cat katana_results.txt gospider_output/* gau_urls.txt waymore_urls.txt | sort -u > all_endpoints.txt
+   ```
+2. Categorize discovered URLs:
+   - **JS files**: `cat all_endpoints.txt | grep -iE "\.js$" | sort -u > js_files.txt`
+   - **API endpoints**: `cat all_endpoints.txt | grep -iE "/api/|/v[0-9]+/" | sort -u > api_endpoints.txt`
+   - **Parameterized URLs**: `cat all_endpoints.txt | grep "=" | sort -u > parameterized_urls.txt`
+   - **Forms and uploads**: identify from crawl output (form actions, file upload endpoints)
+3. Build a custom wordlist from discovered paths for targeted fuzzing:
+   ```
+   cat all_endpoints.txt | unfurl paths | tr '/' '\n' | sort -u > custom_wordlist.txt
+   ```
+4. Check CNAME records for cloud services (S3, Azure, Heroku) that may have misconfigurations
+
+### Phase 4: Next Steps
+- Feed JS files to [javascript-analysis](javascript-analysis.md) for endpoint/secret extraction
+- Feed parameterized URLs to [param-discovery](param-discovery.md) for hidden parameter testing
+- Feed custom wordlist to [fuzzing](fuzzing.md) for targeted content discovery
+- Feed all endpoints to vulnerability scanners
+- Compare current crawl against historical URLs to find removed-but-accessible endpoints
+- Feed CNAME records pointing to cloud services to subdomain takeover checks
+
+## Decision Tree
+
+```
+START: Alive hosts list from probing
+  |
+  +--> Is target a JavaScript SPA?
+  |      |
+  |      YES --> katana with -headless -jc flags
+  |      NO  --> katana with -jc (no headless)
+  |
+  +--> Run gospider for additional link extraction
+  |
+  +--> Run gau + waymore for historical URL discovery
+  |
+  +--> Merge + deduplicate all results
+  |
+  +--> Categorize: JS files | API endpoints | Parameterized URLs | Forms
+  |
+  +--> Hand off to: JS analysis | Param discovery | Fuzzing | Vuln scanning
+```
+
+## Success Criteria
+
+- [ ] Headless crawling completed on all alive hosts
+- [ ] Lightweight crawling completed for supplementary coverage
+- [ ] Historical URL discovery completed (gau + waymore)
+- [ ] All results merged and deduplicated
+- [ ] JS files extracted for JavaScript analysis
+- [ ] API endpoints identified and cataloged
+- [ ] Parameterized URLs extracted for parameter discovery
+- [ ] Custom wordlist generated from discovered paths
+- [ ] DNS records resolved for discovered hosts
+
 ## References
 
 - [katana - ProjectDiscovery](https://github.com/projectdiscovery/katana)

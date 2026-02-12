@@ -4,7 +4,10 @@
       "Bash(git -C /Users/eduardofaria/Developer/hacking-methodology/hacktricks log --oneline)",
       "Bash(git -C /Users/eduardofaria/Developer/hacking-methodology/hacktricks remote -v)",
       "Bash(ls:*)",
-      "Bash(git clone:*)"
+      "Bash(git clone:*)",
+      "Bash(# Check which files have \"\"Agent Workflow\"\" section added echo \"\"=== FILES WITH AGENT WORKFLOW ===\"\" grep -rl \"\"## Agent Workflow\"\" /Users/eduardofaria/Developer/hacking-methodology/web/ /Users/eduardofaria/Developer/hacking-methodology/infra/)",
+      "Bash(sort echo \"\" echo \"=== COUNT ===\" grep -rl \"## Agent Workflow\" /Users/eduardofaria/Developer/hacking-methodology/web/ /Users/eduardofaria/Developer/hacking-methodology/infra/)",
+      "Bash(__NEW_LINE_384091566c9915e3__ echo \"\")"
     ]
   }
 }

@@ -52,11 +52,11 @@ org:company "list_aws_accounts"
 
 `(path:*.xml OR path:*.json OR path:*.properties OR path:*.sql OR path:*.txt OR path:*.log OR path:*.tmp OR path:*.backup OR path:*.bak OR path:*.enc OR path:*.yml OR path:*.yaml OR path:*.toml OR path:*.ini OR path:*.config OR path:*.conf OR path:*.cfg OR path:*.env OR path:*.envrc OR path:*.prod OR path:*.secret OR path:*.private OR path:*.key) AND (access_key OR secret_key OR access_token OR api_key OR apikey OR api_secret OR apiSecret OR app_secret OR application_key OR app_key OR appkey OR auth_token OR authsecret) AND ("sk-" AND (openai OR gpt))`
 
-**Update:** We can use following refined regular expression to filters out most dummy keys:
+**Update:** We can use following refined regular expression to filters out most dummy keys:
 
 `... AND (/sk-[a-zA-Z0-9]{48}/ AND (openai OR gpt))`
 
-Special thanks to [@fkulakov](https://gist.github.com/fkulakov) for the insightful contribution.
+Special thanks to [@fkulakov](https://gist.github.com/fkulakov) for the insightful contribution.
 
 ## Screeenshot:
 
@@ -140,6 +140,94 @@ Special thanks to [@fkulakov](https://gist.github.com/fkulakov) for the insigh
 
 [](https://gist.github.com/win3zz/0a1c70589fcbea64dba4588b93095855#other-useful-tools)
 
-- Online IDE Search: [https://redhuntlabs.com/online-ide-search/](https://redhuntlabs.com/online-ide-search/)
-- Keyhacks on GitHub: [https://github.com/streaak/keyhacks](https://github.com/streaak/keyhacks)
-- Google Hacking Database: [https://www.exploit-db.com/google-hacking-database](https://www.exploit-db.com/google-hacking-database)
+- Online IDE Search: [https://redhuntlabs.com/online-ide-search/](https://redhuntlabs.com/online-ide-search/)
+- Keyhacks on GitHub: [https://github.com/streaak/keyhacks](https://github.com/streaak/keyhacks)
+- Google Hacking Database: [https://www.exploit-db.com/google-hacking-database](https://www.exploit-db.com/google-hacking-database)
+
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform dorking-based reconnaissance.
+
+### Phase 1: Setup
+1. Identify the target organization name, domain(s), and any known employee names or email patterns
+2. Prepare GitHub tokens for authenticated GitHub search (store in environment variable)
+3. Confirm scope boundaries -- which domains, repos, and organizations are in scope
+4. Install required tools:
+   ```
+   pip install GitDorker
+   ```
+
+### Phase 2: Execution
+1. Run Google dorks for the target domain to find exposed services and data:
+   ```
+   site:<TARGET_DOMAIN> ext:sql | ext:env | ext:log | ext:bak | ext:conf
+   site:<TARGET_DOMAIN> inurl:admin | inurl:dashboard | inurl:login
+   site:pastebin.com "<TARGET_DOMAIN>"
+   site:trello.com "<COMPANY_NAME>"
+   site:*.atlassian.net "<COMPANY_NAME>"
+   ```
+2. Run GitHub dorking for leaked secrets:
+   ```
+   python3 GitDorker.py -tf <GITHUB_TOKENS_FILE> -q <TARGET_DOMAIN> -d Dorks/medium_dorks.txt -o gitdorker_out.txt
+   ```
+3. Manually search GitHub for organization-specific secrets:
+   ```
+   org:<COMPANY> "aws_access_key"
+   org:<COMPANY> "password"
+   org:<COMPANY> "api_key"
+   org:<COMPANY> "firebase"
+   ```
+4. Search for exposed API keys using GitHub code search with file extension filters
+5. Validate discovered keys using [Keyhacks](https://github.com/streaak/keyhacks)
+
+### Phase 3: Analysis
+1. Categorize findings by severity:
+   - **Critical**: valid cloud credentials (AWS keys, GCP service accounts), database passwords
+   - **High**: API keys with privileged access, OAuth tokens, internal URLs
+   - **Medium**: expired or rotated keys, internal documentation, employee information
+   - **Low**: public information, non-sensitive configuration files
+2. Validate discovered credentials against their respective services
+3. Cross-reference exposed domains and URLs with [subdomain enumeration](subdomain/passive.md) results
+4. Document unique findings not discovered through other recon methods
+
+### Phase 4: Next Steps
+- Feed discovered URLs to [spidering](spidering.md) and [fuzzing](fuzzing.md)
+- Feed discovered credentials to targeted authentication testing
+- Feed discovered cloud resources to [AWS](../exploitation/cloud/aws.md), [Azure](../exploitation/cloud/azure.md), or [GCP](../exploitation/cloud/gpc.md) testing
+- Feed discovered API keys to API-specific vulnerability testing
+- Report any valid leaked credentials as immediate findings
+
+## Decision Tree
+
+```
+START: Target domain and organization name confirmed
+  |
+  +--> Run Google dorks (site:, inurl:, ext:)
+  |      |
+  |      +--> Exposed files found? --> Download and analyze
+  |      +--> Admin panels found? --> Feed to auth testing
+  |
+  +--> Run GitHub dorks (org:, keyword search)
+  |      |
+  |      +--> Secrets found? --> Validate with Keyhacks
+  |      |      |
+  |      |      +--> Valid? --> Report as critical finding
+  |      |      +--> Invalid/rotated? --> Note for context
+  |      |
+  |      +--> Internal URLs found? --> Feed to recon pipeline
+  |
+  +--> Search paste sites and third-party platforms
+  |      |
+  |      +--> Credentials found? --> Test against target services
+  |
+  +--> Cross-reference all findings with other recon phases
+```
+
+## Success Criteria
+
+- [ ] Google dorks executed for target domain (site:, inurl:, ext: operators)
+- [ ] GitHub dorking completed for organization and domain
+- [ ] Discovered API keys validated using Keyhacks
+- [ ] Paste sites and third-party platforms searched
+- [ ] Findings categorized by severity
+- [ ] Valid credentials reported and handed off for exploitation
+- [ ] Discovered URLs fed into the recon pipeline

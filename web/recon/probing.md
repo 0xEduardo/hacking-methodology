@@ -126,6 +126,91 @@ Key fields to capture for each host:
 - Technology stack
 - Redirect destination (if applicable)
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform HTTP probing reconnaissance.
+
+### Phase 1: Setup
+1. Gather all discovered subdomains and URLs into a single deduplicated file:
+   ```
+   cat passive_subs.txt active_subs.txt | sort -u > hosts.txt
+   ```
+2. Verify the input file has one host per line, with no duplicates
+3. Decide on ports to probe -- default (80, 443) or expanded (80, 443, 8080, 8443, 8000, 3000, 9090)
+4. Ensure httpx is installed with the latest version for accurate tech detection
+
+### Phase 2: Execution
+1. Run full fingerprinting probe:
+   ```
+   cat hosts.txt | httpx -random-agent -retries 2 -sc -cl -title -tech-detect -server -favicon -jarm -cdn -follow-redirects -o recon_results.txt
+   ```
+2. Run multi-port probing if expanded port coverage is needed:
+   ```
+   cat hosts.txt | httpx -p 80,443,8080,8443,8000,8888,3000,5000,9090,9443 -sc -title -o multiport.txt
+   ```
+3. Save JSON output for programmatic processing:
+   ```
+   cat hosts.txt | httpx -json -o results.json
+   ```
+4. Map redirect chains to identify internal hostnames:
+   ```
+   cat hosts.txt | httpx -follow-redirects -location -sc -title -o redirects.txt
+   ```
+
+### Phase 3: Analysis
+1. Categorize hosts by status code:
+   - **200**: live and accessible -- priority targets
+   - **301/302**: redirects -- check destinations for interesting targets
+   - **401**: authentication required -- brute force / default credential candidates
+   - **403**: forbidden -- [403 bypass](../exploitation/bypass/403.md) candidates
+   - **500**: server errors -- potential info disclosure
+2. Identify unique pages by content-length comparison (non-default pages):
+   ```
+   cat recon_results.txt | sort -t' ' -k3 -n | uniq -f2
+   ```
+3. Group hosts by technology stack for targeted testing
+4. Check favicon hashes against Shodan for infrastructure mapping
+5. Identify JARM fingerprint clusters (same TLS stack = same infrastructure)
+6. Flag redirect chains that reveal internal hostnames or staging environments
+
+### Phase 4: Next Steps
+- Feed alive hosts to [spidering](spidering.md) for content discovery
+- Feed alive hosts to [fuzzing](fuzzing.md) for hidden content
+- Feed alive hosts to [screenshot](screenshot.md) for visual triage
+- Feed 401/403 hosts to [brute-force](../helpers/brute-force.md) and [403 bypass](../exploitation/bypass/403.md)
+- Feed technology fingerprints to technology-specific exploit research
+- Use favicon hashes in Shodan: `http.favicon.hash:<HASH>`
+
+## Decision Tree
+
+```
+START: Subdomain list from passive + active enumeration
+  |
+  +--> Run httpx with full fingerprinting flags
+  |
+  +--> Categorize by status code
+  |      |
+  |      +--> 200 hosts --> Spidering + Fuzzing + Screenshot
+  |      +--> 301/302 hosts --> Analyze redirect destinations
+  |      +--> 401 hosts --> Default credentials + Brute force
+  |      +--> 403 hosts --> 403 bypass techniques
+  |      +--> 500 hosts --> Information disclosure analysis
+  |
+  +--> Group by technology stack --> Technology-specific testing
+  |
+  +--> Identify unique content-length --> Prioritize non-default pages
+```
+
+## Success Criteria
+
+- [ ] All subdomains probed for HTTP/HTTPS responsiveness
+- [ ] Status codes, titles, server headers, and technologies captured
+- [ ] Multi-port probing completed if applicable
+- [ ] Redirect chains mapped and analyzed
+- [ ] Content-length comparison done to identify unique pages
+- [ ] Results saved in both human-readable and JSON formats
+- [ ] Hosts categorized by status code and technology
+- [ ] Findings handed off to spidering, fuzzing, and screenshot phases
+
 ## References
 
 - [httpx - ProjectDiscovery](https://github.com/projectdiscovery/httpx)

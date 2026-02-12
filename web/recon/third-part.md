@@ -202,6 +202,110 @@ GitHub            github.com/target-org/infra (AWS keys in .env)      Leaked
 LeakIX            Exposed Elasticsearch on 93.184.216.34:9200         No Auth
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform third-party service enumeration.
+
+### Phase 1: Setup
+1. Gather the target domain, organization name, and known keywords (product names, internal project names)
+2. Ensure API keys are configured for:
+   - Shodan (`SHODAN_API_KEY`)
+   - Censys (`CENSYS_API_ID`, `CENSYS_API_SECRET`)
+   - VirusTotal (optional)
+3. Install required tools:
+   ```
+   go install github.com/lc/gau/v2/cmd/gau@latest
+   pip install waymore trufflehog
+   pip install cloud_enum
+   ```
+4. Prepare output directory for organized results
+
+### Phase 2: Execution
+1. Mine historical URLs from archives:
+   ```
+   echo "<TARGET_DOMAIN>" | gau --subs --o gau_results.txt
+   waymore -i <TARGET_DOMAIN> -mode U -oU waymore_results.txt
+   ```
+2. Query Shodan for associated infrastructure:
+   ```
+   shodan search org:"<ORG_NAME>" --fields ip_str,port,hostnames
+   shodan search ssl:"<TARGET_DOMAIN>" --fields ip_str,port,hostnames
+   ```
+3. Enumerate cloud resources:
+   ```
+   python3 cloud_enum.py -k <TARGET_KEYWORD> -k <TARGET_DOMAIN>
+   ```
+4. Search for exposed dashboards by filtering archive URLs:
+   ```
+   cat gau_results.txt | grep -iE "admin|dashboard|panel|console|swagger|graphql|jenkins|grafana|kibana"
+   ```
+5. Scan for leaked secrets in GitHub repositories:
+   ```
+   trufflehog github --org=<TARGET_ORG>
+   ```
+6. Check AlienVault OTX for associated URLs:
+   ```
+   https://otx.alienvault.com/indicator/domain/<TARGET_DOMAIN>
+   ```
+
+### Phase 3: Analysis
+1. Categorize discovered services by risk:
+   - **Critical**: unauthenticated dashboards (Jenkins, Grafana, Kibana), exposed databases, open S3 buckets
+   - **High**: API documentation (Swagger, GraphQL), exposed Actuator endpoints, leaked credentials in GitHub
+   - **Medium**: information disclosure in archive URLs, exposed configuration files
+   - **Low**: technology fingerprinting data, public documentation
+2. Verify unauthenticated access to discovered dashboards and services
+3. Cross-reference Shodan/Censys results with subdomain enumeration to identify overlooked hosts
+4. Check for `.env`, `.git/config`, and `robots.txt` on every discovered dashboard URL
+5. Merge newly discovered hosts into the master subdomain list
+
+### Phase 4: Next Steps
+- Feed discovered URLs to [spidering](spidering.md) and [fuzzing](fuzzing.md)
+- Feed unauthenticated dashboards to exploitation testing (default credentials, known CVEs)
+- Feed cloud storage findings to [AWS](../exploitation/cloud/aws.md), [Azure](../exploitation/cloud/azure.md), or [GCP](../exploitation/cloud/gpc.md) testing
+- Feed leaked secrets to credential validation and exploitation
+- Feed new hosts/IPs to [probing](probing.md) for alive detection and fingerprinting
+
+## Decision Tree
+
+```
+START: Target domain and organization name confirmed
+  |
+  +--> Mine historical URLs (gau, waymore)
+  |      |
+  |      +--> Admin/dashboard URLs found? --> Verify access, check for default creds
+  |      +--> Config/backup files found? --> Download and analyze for secrets
+  |
+  +--> Query Shodan/Censys for infrastructure
+  |      |
+  |      +--> New IPs/hosts found? --> Feed to probing pipeline
+  |      +--> Open ports found? --> Service-specific enumeration
+  |
+  +--> Enumerate cloud resources (cloud_enum, S3Scanner)
+  |      |
+  |      +--> Public buckets? --> Check for sensitive data
+  |      +--> Cloud functions? --> Test for authorization bypass
+  |
+  +--> Search for leaked secrets (trufflehog, GitHub dorks)
+  |      |
+  |      +--> Valid credentials? --> Report and exploit
+  |      +--> API keys? --> Validate scope and permissions
+  |
+  +--> Check AlienVault OTX and VirusTotal
+         |
+         +--> Additional URLs? --> Merge into recon pipeline
+```
+
+## Success Criteria
+
+- [ ] Historical URLs mined from Wayback Machine and CommonCrawl
+- [ ] Shodan/Censys queried for organization infrastructure
+- [ ] Cloud resources enumerated (AWS, Azure, GCP)
+- [ ] Exposed dashboards identified and access verified
+- [ ] GitHub and paste sites searched for leaked secrets
+- [ ] All findings categorized by risk level
+- [ ] New hosts merged into master subdomain list
+- [ ] Findings handed off to appropriate exploitation phases
+
 ## References
 
 - [gau - lc](https://github.com/lc/gau)

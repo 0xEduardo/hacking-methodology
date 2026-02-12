@@ -323,3 +323,100 @@ wpscan --url https://TARGET --enumerate u,p,t --api-token TOKEN
 # Check for XML-RPC
 curl -X POST https://TARGET/xmlrpc.php -d '<methodCall><methodName>system.listMethods</methodName></methodCall>'
 ```
+
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform technology fingerprinting and identify technology-specific attack vectors.
+
+### Phase 1: Setup
+1. Obtain the list of alive hosts from [probing](../recon/probing.md) results
+2. Ensure technology detection tools are available:
+   - httpx with `-tech-detect` flag
+   - WhatWeb (`whatweb`)
+   - Wappalyzer CLI or browser extension
+3. Prepare a checklist of technologies with known attack vectors (this file)
+
+### Phase 2: Execution
+1. Run automated technology detection on all alive hosts:
+   ```
+   cat alive_hosts.txt | httpx -tech-detect -sc -title -server -o tech_results.txt
+   whatweb -i alive_hosts.txt -a 3 --log-brief whatweb_results.txt
+   ```
+2. Manually inspect response headers for technology indicators:
+   - `X-Powered-By`, `Server`, `X-AspNet-Version`, `X-Generator`
+   - Cookie names: `JSESSIONID` (Java), `laravel_session` (Laravel), `connect.sid` (Node.js), `ci_session` (CodeIgniter)
+   - HTML source: `__VIEWSTATE` (ASP.NET), `csrfmiddlewaretoken` (Django), `_rails` (Rails)
+3. Check for technology-specific paths:
+   ```
+   # Spring Boot Actuator
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/actuator/health
+   # Drupal
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/CHANGELOG.txt
+   # WordPress
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/wp-login.php
+   # Joomla
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/administrator/
+   ```
+4. Check for API documentation endpoints:
+   ```
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/swagger-ui.html
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/api-docs
+   curl -s -o /dev/null -w "%{http_code}" <TARGET>/graphql
+   ```
+
+### Phase 3: Analysis
+1. Map each target to its technology stack (web server, framework, CMS, language)
+2. For each identified technology, look up known attack vectors:
+   - **WordPress**: see [WordPress attacks](../exploitation/cms/wordpress.md)
+   - **Drupal/Joomla**: see [Other CMS attacks](../exploitation/cms/others.md)
+   - **Spring Boot**: check Actuator endpoints for info disclosure
+   - **ASP.NET**: test ViewState deserialization, IIS shortname scanning
+   - **Node.js/Express**: test for `layout` parameter LFI
+   - **Django**: test admin page, debug mode information disclosure
+   - **GraphQL**: test introspection, see [GraphQL attacks](../exploitation/vulns/graphql.md)
+3. Check for known CVEs matching the exact version detected
+4. Group targets by technology for batch testing
+
+### Phase 4: Next Steps
+- Feed CMS targets to CMS-specific scanners (WPScan, droopescan, joomscan)
+- Feed API documentation to API-specific vulnerability testing
+- Feed Actuator/debug endpoints to information disclosure analysis
+- Feed version-specific CVE matches to exploitation
+- Feed technology groupings to targeted fuzzing with appropriate wordlists
+
+## Decision Tree
+
+```
+START: Alive hosts list from probing
+  |
+  +--> Run technology detection (httpx -tech-detect, whatweb)
+  |
+  +--> Inspect headers, cookies, HTML source manually
+  |
+  +--> Categorize by technology:
+         |
+         +--> CMS detected (WordPress, Drupal, Joomla)?
+         |      --> CMS-specific scanner + known CVEs
+         |
+         +--> Framework detected (Spring, Django, Rails, Express)?
+         |      --> Framework-specific paths + debug endpoints
+         |
+         +--> API docs found (Swagger, GraphQL)?
+         |      --> Full API attack surface testing
+         |
+         +--> Java/ASP.NET detected?
+         |      --> Deserialization testing + technology-specific vulns
+         |
+         +--> Unknown/custom application?
+                --> Deep manual testing + fuzzing
+```
+
+## Success Criteria
+
+- [ ] Automated technology detection run on all alive hosts
+- [ ] Response headers and cookies manually inspected for additional indicators
+- [ ] Technology-specific paths probed (Actuator, CHANGELOG.txt, wp-login.php, etc.)
+- [ ] API documentation endpoints checked (Swagger, GraphQL)
+- [ ] Each target mapped to its technology stack
+- [ ] Known CVEs researched for detected versions
+- [ ] Targets grouped by technology for batch testing
+- [ ] Findings handed off to technology-specific exploitation phases

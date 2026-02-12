@@ -248,6 +248,104 @@ Fuzzing results should be saved as JSON for post-processing and piped into the n
 200           892             45           https://target.com/config.bak
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform web fuzzing reconnaissance.
+
+### Phase 1: Setup
+1. Identify the target URL and confirm it is alive (check HTTP response)
+2. Fingerprint the technology stack from [probing](probing.md) or [web-technologies](../helpers/web-technologies.md) results
+3. Select the primary wordlist based on detected technology:
+   - PHP target: use `raft-large-files.txt` + extensions `php,php5,phtml,inc,bak`
+   - ASP/.NET target: use `raft-large-files.txt` + extensions `asp,aspx,ashx,asmx,config`
+   - Java target: use `raft-large-files.txt` + extensions `jsp,jspa,do,action`
+   - Generic/unknown: use `common.txt` or `raft-large-directories.txt`
+4. If authenticated testing is required, obtain valid session cookies or tokens
+5. Verify ffuf is configured with `~/.ffufrc` defaults (custom User-Agent, colors)
+
+### Phase 2: Execution
+1. Run initial directory fuzzing with auto-calibration:
+   ```
+   ffuf -u https://<TARGET>/FUZZ -w <WORDLIST> -ac -c -se -sf -o results_dir.json -of json
+   ```
+2. Run file fuzzing with technology-specific extensions:
+   ```
+   ffuf -u https://<TARGET>/FUZZ -w <WORDLIST> -ac -e <EXTENSIONS> -o results_files.json -of json
+   ```
+3. Run recursive fuzzing on any discovered directories:
+   ```
+   ffuf -u https://<TARGET>/FUZZ -w <WORDLIST> -ac -recursion -recursion-depth 3
+   ```
+4. Run backup file discovery on interesting files found:
+   ```
+   ffuf -u https://<TARGET>/<KNOWN_FILE>.FUZZ -w backup_extensions.txt -mc all -fc 404
+   ```
+5. Run virtual host fuzzing if multiple apps may share the IP:
+   ```
+   ffuf -u http://<TARGET_IP> -H "Host: FUZZ.<DOMAIN>" -w subdomains-top1million-5000.txt -ac
+   ```
+6. Run parameter fuzzing on discovered endpoints:
+   ```
+   ffuf -u "https://<TARGET>/<ENDPOINT>?FUZZ=test" -w burp-parameter-names.txt -ac
+   ```
+
+### Phase 3: Analysis
+1. Parse JSON output files and deduplicate results
+2. Categorize findings by type:
+   - **Admin panels**: paths containing `admin`, `dashboard`, `manager`, `console`
+   - **Backup files**: extensions `.bak`, `.old`, `.swp`, `.zip`, `.sql`, `.tar.gz`
+   - **Configuration files**: `config`, `.env`, `.ini`, `.xml`, `.yaml`, `.properties`
+   - **API endpoints**: paths containing `/api/`, `/v1/`, `/v2/`, `/graphql`
+   - **Debug/test endpoints**: `debug`, `test`, `phpinfo`, `trace`, `actuator`
+3. Flag 403 responses for [403 bypass testing](../exploitation/bypass/403.md)
+4. Flag 401 responses for brute force or default credential testing
+5. Compare response sizes to identify unique (non-default) pages
+
+### Phase 4: Next Steps
+- Feed discovered endpoints to [spidering](spidering.md) for deeper crawling
+- Feed discovered endpoints to [param-discovery](param-discovery.md) for hidden parameter testing
+- Feed discovered API endpoints to vulnerability scanners
+- Send backup/config files for manual review (credential extraction)
+- Test 403 paths with [403 bypass techniques](../exploitation/bypass/403.md)
+- Feed admin panels to [brute-force](../helpers/brute-force.md) testing
+
+## Decision Tree
+
+```
+START: Target URL confirmed alive
+  |
+  +--> 1. Directory fuzzing (raft-large-directories.txt + auto-calibrate)
+  |      |
+  |      +--> New directories found? --> Recursive fuzzing on each
+  |
+  +--> 2. File fuzzing (technology-specific extensions)
+  |      |
+  |      +--> Interesting files found? --> Backup extension fuzzing
+  |
+  +--> 3. Parameter fuzzing (burp-parameter-names.txt on key endpoints)
+  |      |
+  |      +--> Parameters found? --> Feed to XSS/SQLi/SSRF testing
+  |
+  +--> 4. Virtual host fuzzing (if IP hosts multiple apps)
+  |      |
+  |      +--> New vhosts found? --> Add to target list, repeat from step 1
+  |
+  +--> 5. API endpoint fuzzing (/api/v1/FUZZ, /api/v2/FUZZ)
+         |
+         +--> API routes found? --> Feed to API vulnerability testing
+```
+
+## Success Criteria
+
+- [ ] Directory fuzzing completed with at least one wordlist
+- [ ] File fuzzing completed with technology-appropriate extensions
+- [ ] All discovered directories recursively fuzzed
+- [ ] Backup files checked for all interesting filenames
+- [ ] Virtual host fuzzing attempted if applicable
+- [ ] Parameter fuzzing run on key endpoints
+- [ ] Results deduplicated and categorized by type
+- [ ] 403/401 responses flagged for further testing
+- [ ] Findings handed off to downstream phases (spidering, param discovery, vuln scanning)
+
 ## References
 
 - [ffuf](https://github.com/ffuf/ffuf)

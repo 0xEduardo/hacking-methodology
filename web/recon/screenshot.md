@@ -140,6 +140,85 @@ screenshots/
     http-staging.target.com-8080.png
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform visual reconnaissance via screenshots.
+
+### Phase 1: Setup
+1. Obtain the alive hosts list from [probing](probing.md) results -- ensure all URLs include scheme (`http://` or `https://`)
+2. Verify Chrome/Chromium is installed: `which google-chrome || which chromium`
+3. Select the screenshotting tool based on needs:
+   - **httpx -ss**: fastest option if already running httpx for probing
+   - **gowitness**: best gallery view for manual triage
+   - **aquatone**: best for clustering similar pages
+4. Prepare output directory for screenshots
+
+### Phase 2: Execution
+1. Run screenshotting on all alive hosts:
+   ```
+   gowitness file -f urls.txt -t 10 --timeout 15 --resolution-x 1920 --resolution-y 1080
+   ```
+   Or combined with probing:
+   ```
+   cat hosts.txt | httpx -sc -title -tech-detect -ss -srd ./screenshots/ -o probed.txt
+   ```
+2. Start gallery server for visual review:
+   ```
+   gowitness server
+   ```
+   Browse to `http://localhost:7171`
+
+### Phase 3: Analysis
+1. Visually triage all screenshots, looking for:
+   - **Login pages**: mark for authentication testing and brute force
+   - **Admin panels**: mark for default credential testing and privilege escalation
+   - **Default server pages** (Apache, Nginx, IIS, Tomcat): mark for known CVEs
+   - **API documentation** (Swagger, GraphQL Playground): mark for full API testing
+   - **Dashboards** (Grafana, Kibana, Jenkins): check for unauthenticated access
+   - **Directory listings**: check for sensitive file exposure
+   - **Error pages with stack traces**: extract technology details
+   - **Blank/empty pages**: may hide API endpoints, worth fuzzing
+   - **Custom 403/404 pages**: different backend handling, potential bypass
+2. Group similar-looking pages (use aquatone clustering if available)
+3. Compare against known default page templates to identify custom applications
+
+### Phase 4: Next Steps
+- Prioritize login pages for [brute-force](../helpers/brute-force.md) and [authentication testing](../exploitation/authentication/)
+- Test admin panels for default credentials
+- Feed API documentation pages to API-specific vulnerability testing
+- Test unauthenticated dashboards for information disclosure
+- Feed custom applications to deep manual testing
+- Feed default server pages to version-specific CVE research
+
+## Decision Tree
+
+```
+START: Alive hosts list from probing
+  |
+  +--> Run screenshotter (gowitness / httpx -ss / aquatone)
+  |
+  +--> Open gallery view for visual triage
+  |
+  +--> Categorize by visual indicator:
+         |
+         +--> Login page --> Brute force + auth bypass testing
+         +--> Admin panel --> Default creds + privilege escalation
+         +--> Default page --> CVE research for detected version
+         +--> API docs --> Full API attack surface testing
+         +--> Dashboard --> Check unauthenticated access
+         +--> Directory listing --> Sensitive file review
+         +--> Error page --> Technology fingerprinting
+         +--> Blank page --> Fuzzing for hidden endpoints
+```
+
+## Success Criteria
+
+- [ ] Screenshots captured for all alive hosts
+- [ ] Gallery view or HTML report generated for triage
+- [ ] All screenshots reviewed and categorized
+- [ ] High-value targets identified (login, admin, dashboards, API docs)
+- [ ] Shortlist of priority targets created for deep testing
+- [ ] Findings handed off to appropriate exploitation phases
+
 ## References
 
 - [gowitness - sensepost](https://github.com/sensepost/gowitness)

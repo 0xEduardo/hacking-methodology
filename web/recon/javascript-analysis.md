@@ -256,6 +256,107 @@ sink      innerHTML assignment at line 342           dashboard.js
 library   jquery 2.1.4 (CVE-2020-11022)            vendor.js
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform JavaScript analysis reconnaissance.
+
+### Phase 1: Setup
+1. Collect all JavaScript file URLs from prior phases:
+   - From [spidering](spidering.md) output: `cat crawl_results.txt | grep -iE "\.js$" | sort -u`
+   - From page source: `curl -s https://<TARGET> | grep -oP 'src="[^"]*\.js[^"]*"'`
+   - From archive sources: `gau <DOMAIN> --subs | grep "\.js$" | sort -u`
+2. Download all JS files locally for offline analysis
+3. Filter out known third-party libraries (jQuery, React production, Bootstrap, Angular min) to focus on application code
+4. Check for historical JS versions via Wayback Machine (`waybackpack` or `waymore`)
+
+### Phase 2: Execution
+1. **Endpoint extraction** -- run on all application JS files:
+   ```
+   cat *.js | jsluice urls
+   python3 xnLinkFinder.py -i '*.js' -o cli
+   ```
+2. **Secret extraction** -- scan for API keys, tokens, credentials:
+   ```
+   cat *.js | jsluice secrets
+   trufflehog filesystem --directory <JS_DIR>
+   semgrep --config "p/secrets" <JS_DIR>
+   ```
+3. **Source map analysis** -- check each JS URL for `.js.map`:
+   ```
+   cat js_urls.txt | while read url; do
+     code=$(curl -s -o /dev/null -w "%{http_code}" "${url}.map")
+     [ "$code" = "200" ] && echo "[FOUND] ${url}.map"
+   done
+   ```
+   If found, reconstruct source: `sourcemapper -output recovered_source -url <URL>.map`
+4. **DOM sink analysis** -- search for dangerous patterns:
+   ```
+   grep -rnP "(innerHTML|outerHTML|document\.write|eval\()" *.js
+   ```
+5. **Vulnerable library detection**:
+   ```
+   retire --jspath ./downloaded_js/ --outputformat json
+   ```
+
+### Phase 3: Analysis
+1. Deduplicate and categorize extracted endpoints:
+   - **API routes**: `/api/`, `/v1/`, `/v2/`, REST patterns
+   - **Internal paths**: paths containing `internal`, `admin`, `debug`, `staging`
+   - **Third-party integrations**: external API URLs (Stripe, AWS, Firebase, etc.)
+2. Validate discovered secrets using [keyhacks](https://github.com/streaak/keyhacks) patterns:
+   - AWS keys: test with `aws sts get-caller-identity`
+   - Google API keys: test against Maps, Translate APIs
+   - JWT tokens: decode and check expiration
+3. Map DOM sinks to potential XSS vectors for [XSS testing](../exploitation/vulns/xss.md)
+4. List vulnerable libraries with their CVE IDs and affected versions
+5. If source maps were recovered, perform deeper analysis on original source
+
+### Phase 4: Next Steps
+- Feed discovered API endpoints to [param-discovery](param-discovery.md)
+- Feed discovered endpoints to [fuzzing](fuzzing.md) for deeper enumeration
+- Report confirmed valid secrets as findings
+- Feed DOM sink locations to [XSS](../exploitation/vulns/xss.md) testing
+- Feed vulnerable library findings to CVE exploit research
+- If source maps revealed full source, perform whitebox code review
+
+## Decision Tree
+
+```
+START: JS files collected from spidering/crawling
+  |
+  +--> 1. Endpoint extraction (jsluice, xnLinkFinder)
+  |      |
+  |      +--> New API routes found? --> Feed to param discovery + fuzzing
+  |
+  +--> 2. Secret extraction (jsluice secrets, trufflehog, semgrep)
+  |      |
+  |      +--> Secrets found? --> Validate with keyhacks --> Report valid secrets
+  |
+  +--> 3. Source map analysis (.js.map check)
+  |      |
+  |      +--> Source maps found? --> Reconstruct source --> Deep code review
+  |      |
+  |      +--> No source maps? --> Continue with minified analysis
+  |
+  +--> 4. DOM sink analysis (innerHTML, eval, document.write)
+  |      |
+  |      +--> Sinks found? --> Map source-to-sink flows --> XSS testing
+  |
+  +--> 5. Vulnerable library detection (retire.js)
+         |
+         +--> Vulnerable libs found? --> CVE research + exploit check
+```
+
+## Success Criteria
+
+- [ ] All application JS files collected and downloaded
+- [ ] Third-party libraries filtered out from analysis scope
+- [ ] Endpoint extraction completed with at least two tools
+- [ ] Secret scanning completed; any findings validated
+- [ ] Source map check performed on all JS URLs
+- [ ] DOM sink analysis completed; dangerous patterns cataloged
+- [ ] Vulnerable library scan completed
+- [ ] Results categorized and handed off to downstream phases
+
 ## References
 
 - [jsluice](https://github.com/BishopFox/jsluice)

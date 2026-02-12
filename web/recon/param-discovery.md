@@ -136,6 +136,110 @@ https://target.com/login                 POST      username, password, remember,
 https://target.com/api/v1/profile        PUT       name, email, role, is_admin
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform parameter discovery reconnaissance.
+
+### Phase 1: Setup
+1. Collect target URLs from prior phases:
+   - Endpoints from [spidering](spidering.md) results
+   - API routes from [javascript-analysis](javascript-analysis.md)
+   - Discovered paths from [fuzzing](fuzzing.md)
+2. Extract already-known parameter names from crawled URLs:
+   ```
+   cat crawled_urls.txt | grep "=" | unfurl keys | sort -u > known_params.txt
+   ```
+3. Build a combined parameter wordlist:
+   ```
+   cat known_params.txt /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt | sort -u > combined_params.txt
+   ```
+4. Identify priority endpoints for testing (login forms, API endpoints, search, admin panels)
+
+### Phase 2: Execution
+1. Mine parameters from JavaScript files:
+   ```
+   cat all_js_files.txt | xargs grep -oP '[\?&](\w+)=' | cut -d= -f1 | sort -u
+   ```
+2. Mine parameters from Wayback Machine:
+   ```
+   echo "<TARGET_DOMAIN>" | gau --subs | grep "=" | unfurl keys | sort | uniq -c | sort -rn
+   ```
+3. Brute-force hidden GET parameters with x8:
+   ```
+   x8 -u "https://<TARGET>/<ENDPOINT>" -w combined_params.txt
+   ```
+4. Brute-force hidden POST parameters with Arjun:
+   ```
+   arjun -u "https://<TARGET>/<ENDPOINT>" -m POST -w combined_params.txt
+   ```
+5. Test all HTTP methods on API endpoints:
+   ```
+   for METHOD in GET POST PUT PATCH DELETE; do
+     arjun -u "https://<TARGET>/api/v1/<ENDPOINT>" -m $METHOD -oT "params_${METHOD}.txt"
+   done
+   ```
+6. Test JSON body parameters on API endpoints:
+   ```
+   arjun -u "https://<TARGET>/api/v1/<ENDPOINT>" -m POST-JSON
+   ```
+
+### Phase 3: Analysis
+1. Categorize discovered parameters by potential vulnerability type:
+   - **Reflected parameters** (value appears in response): potential XSS
+   - **Database-backed parameters** (`id`, `user_id`, `order`): potential SQLi, IDOR
+   - **URL/redirect parameters** (`url`, `redirect`, `next`, `callback`): potential SSRF, open redirect
+   - **Role/privilege parameters** (`role`, `is_admin`, `group`, `privilege`): potential mass assignment
+   - **Debug parameters** (`debug`, `test`, `verbose`, `trace`): potential info disclosure
+   - **File parameters** (`file`, `path`, `template`, `page`): potential LFI/path traversal
+2. Compare parameters found by x8 vs Arjun -- union the results for full coverage
+3. Identify parameters that accept different values across HTTP methods
+
+### Phase 4: Next Steps
+- Feed reflected parameters to [XSS](../exploitation/vulns/xss.md) testing
+- Feed database-backed parameters to [SQLi](../exploitation/vulns/sqli.md) testing
+- Feed URL parameters to [SSRF](../exploitation/vulns/ssrf.md) and [open redirect](../exploitation/vulns/open-redirect.md) testing
+- Feed role/privilege parameters to mass assignment and [IDOR](../exploitation/vulns/idor.md) testing
+- Feed debug parameters to information disclosure analysis
+- Feed file parameters to [LFI](../exploitation/vulns/lfi.md) testing
+
+## Decision Tree
+
+```
+START: Target endpoints collected from spidering + fuzzing + JS analysis
+  |
+  +--> 1. Mine known params from crawled URLs (unfurl keys)
+  |
+  +--> 2. Mine params from JS files (grep patterns)
+  |
+  +--> 3. Mine params from Wayback Machine (gau + unfurl)
+  |
+  +--> 4. Brute-force reflected params (x8, GET)
+  |      |
+  |      +--> Reflected params found? --> XSS testing
+  |
+  +--> 5. Brute-force hidden params (Arjun, POST/JSON/XML)
+  |      |
+  |      +--> Hidden params found? --> Categorize by vuln type
+  |
+  +--> 6. Brute-force header params (x8 with header mode)
+  |      |
+  |      +--> Header params found? --> Host header injection, cache poisoning
+  |
+  +--> 7. Brute-force cookie params
+         |
+         +--> Cookie params found? --> Session manipulation testing
+```
+
+## Success Criteria
+
+- [ ] Known parameters mined from crawled URLs and JS files
+- [ ] Historical parameters mined from Wayback Machine
+- [ ] GET parameter brute-force completed on priority endpoints
+- [ ] POST parameter brute-force completed on priority endpoints
+- [ ] JSON body parameter testing completed on API endpoints
+- [ ] Multiple HTTP methods tested on API endpoints
+- [ ] Discovered parameters categorized by vulnerability type
+- [ ] Results handed off to vulnerability-specific testing phases
+
 ## References
 
 - [x8 - Sh1Yo](https://github.com/Sh1Yo/x8)

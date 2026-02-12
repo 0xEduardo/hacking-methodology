@@ -301,6 +301,121 @@ old.target.com                 -               old.heroku.com       takeover-can
 dev-portal.target.com          192.168.1.10    -                    internal
 ```
 
+## Agent Workflow
+> Step-by-step instructions for an AI agent to perform active subdomain enumeration.
+
+### Phase 1: Setup
+1. Download and validate a fresh DNS resolver list:
+   ```
+   wget https://raw.githubusercontent.com/trickest/resolvers/main/resolvers-trusted.txt -O resolvers.txt
+   ```
+2. Select brute-force wordlist based on desired depth:
+   - Quick scan: `subdomains-top1million-5000.txt`
+   - Standard: `subdomains-top1million-20000.txt`
+   - Thorough: `subdomains-top1million-110000.txt`
+3. Gather known subdomains from [passive enumeration](passive.md) as seed for permutations
+4. Check target domain for wildcard DNS before brute-forcing:
+   ```
+   dig A randomnonexistent12345.<DOMAIN> @8.8.8.8
+   ```
+
+### Phase 2: Execution
+1. Run DNS brute-force with wildcard filtering:
+   ```
+   puredns bruteforce <WORDLIST> <DOMAIN> -r resolvers.txt --write brute_results.txt
+   ```
+2. Resolve and validate results through trusted resolvers:
+   ```
+   puredns resolve brute_results.txt -r resolvers.txt --write resolved.txt
+   ```
+3. Generate permutations from known subdomains and resolve:
+   ```
+   gotator -sub known_subdomains.txt -perm /usr/share/seclists/Discovery/DNS/dns-prefixes.txt -depth 1 -numbers 10 -mindup -md > permuted.txt
+   puredns resolve permuted.txt -r resolvers.txt --write permutation_results.txt
+   ```
+4. Attempt DNS zone transfers on all authoritative nameservers:
+   ```
+   dig NS <DOMAIN>
+   dig axfr <DOMAIN> @<NS1>
+   dig axfr <DOMAIN> @<NS2>
+   ```
+5. Query certificate transparency logs:
+   ```
+   curl -s "https://crt.sh/?q=%25.<DOMAIN>&output=json" | jq -r '.[].name_value' | sed 's/\*\.//g' | sort -u > ct_subdomains.txt
+   ```
+6. Check for subdomain takeover on all discovered subdomains:
+   ```
+   subzy run --targets all_subdomains.txt
+   nuclei -l all_subdomains.txt -tags takeover
+   ```
+7. Fuzz virtual hosts on target IPs:
+   ```
+   ffuf -u http://<TARGET_IP> -H "Host: FUZZ.<DOMAIN>" -w subdomains-top1million-5000.txt -ac
+   ```
+
+### Phase 3: Analysis
+1. Merge all results and deduplicate:
+   ```
+   cat brute_results.txt permutation_results.txt ct_subdomains.txt | sort -u > all_subdomains.txt
+   ```
+2. Resolve all subdomains with multiple record types:
+   ```
+   cat all_subdomains.txt | dnsx -silent -a -aaaa -cname -resp -o resolved_details.txt
+   ```
+3. Identify interesting patterns:
+   - Subdomains resolving to RFC 1918 addresses (internal network)
+   - CNAME records pointing to cloud services (S3, Azure, Heroku)
+   - Dangling CNAMEs (subdomain takeover candidates)
+4. Flag zone transfer success as a significant finding
+
+### Phase 4: Next Steps
+- Feed all discovered subdomains to [probing](../probing.md) for alive detection
+- Investigate subdomain takeover candidates from dangling CNAMEs
+- Feed internal-resolving subdomains to network mapping
+- Feed cloud-pointed subdomains to [cloud testing](../../exploitation/cloud/)
+- Run recursive brute-force on interesting subdomains (`FUZZ.sub.domain.com`)
+
+## Decision Tree
+
+```
+START: Target domain + known subdomains from passive enum
+  |
+  +--> Check for wildcard DNS
+  |      |
+  |      +--> Wildcard detected? --> Use puredns (auto-filters wildcards)
+  |
+  +--> 1. DNS brute-force (puredns/shuffledns)
+  |
+  +--> 2. Permutation generation (gotator/altdns/dnsgen) + resolve
+  |
+  +--> 3. Zone transfer attempts (dig axfr on all nameservers)
+  |      |
+  |      +--> Zone transfer succeeded? --> Report finding + parse all records
+  |
+  +--> 4. Certificate transparency log query (crt.sh)
+  |
+  +--> 5. Virtual host fuzzing (ffuf Host header)
+  |
+  +--> 6. Subdomain takeover check (subzy/nuclei)
+  |      |
+  |      +--> Takeover candidate? --> Attempt takeover or report
+  |
+  +--> Merge + deduplicate --> Feed to probing
+```
+
+## Success Criteria
+
+- [ ] DNS resolver list validated and fresh
+- [ ] Wildcard DNS checked before brute-forcing
+- [ ] DNS brute-force completed with appropriate wordlist
+- [ ] Permutation-based enumeration completed on known subdomains
+- [ ] Zone transfer attempted on all authoritative nameservers
+- [ ] Certificate transparency logs queried
+- [ ] Virtual host fuzzing completed
+- [ ] Subdomain takeover check completed on all results
+- [ ] All results merged, deduplicated, and resolved
+- [ ] Findings handed off to probing phase
+
 ## References
 
 - [puredns](https://github.com/d3mondev/puredns)
