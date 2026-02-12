@@ -1,20 +1,148 @@
-For large recons where manual website visit is not doable. The program would grab a list of valid urls and screenshot them using a headless browser.
+# Screenshot / Visual Reconnaissance
 
-> **Hold down!**
-> 
-> A browser must be installed prior using an screenshotter. Chrome or chromium is recommended.
+> **Summary**: Captures screenshots of live web targets for visual triage, allowing rapid identification of interesting, default, or vulnerable applications.
+> **Goal**: Visually inspect hundreds or thousands of live hosts to prioritize targets -- find login pages, admin panels, default installs, error pages, and forgotten applications.
 
-## GoWitness
+## Methodology
+
+### When to Use
+
+- After probing when you have a large list of alive hosts that cannot be manually visited
+- To visually identify interesting targets before deep testing (login pages, dashboards, admin panels)
+- To detect default installations (Apache, Nginx, Tomcat, IIS) that may have known vulnerabilities
+- When comparing environments (staging vs. production) or tracking changes over time
+- To build a visual report of the attack surface for documentation
+
+### Step-by-Step
+
+1. **Prepare input** -- use the alive hosts list from [probing](probing.md)
+   - Success criteria: file with valid URLs (scheme included), one per line
+2. **Ensure browser is installed** -- screenshotting tools require Chrome or Chromium
+   - Success criteria: `which google-chrome` or `which chromium` returns a valid path
+3. **Run screenshotter** -- capture screenshots of all targets
+   - Success criteria: screenshot directory populated with images for each host
+4. **Open gallery view** -- use the tool's built-in report viewer to visually triage
+   - Success criteria: HTML report or gallery ready for manual review
+5. **Tag and prioritize** -- mark interesting targets for follow-up testing
+   - Success criteria: shortlist of high-value targets extracted
+
+## Tools & Commands
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| gowitness | `gowitness file -f urls.txt -t <THREADS>` | Screenshot all URLs from file |
+| gowitness | `gowitness single https://<TARGET>` | Screenshot a single URL |
+| gowitness | `gowitness server` | Start web UI to browse screenshots |
+| gowitness | `gowitness report generate` | Generate HTML report |
+| httpx | `cat hosts.txt \| httpx -ss -srd screenshots/` | Screenshot with httpx (built-in) |
+| httpx | `echo <TARGET> \| httpx -ss` | Quick single-target screenshot |
+| EyeWitness | `python3 EyeWitness.py -f urls.txt --web -d output/` | Screenshot + header analysis |
+| aquatone | `cat hosts.txt \| aquatone -out aquatone_results/` | Screenshot with clustering |
+
+### GoWitness (Recommended)
+
+```bash
+# Basic batch screenshot
+gowitness file -f urls.txt -t 10
+
+# With custom resolution and timeout
+gowitness file -f urls.txt \
+  -t 10 \                           # Threads
+  --timeout 15 \                    # Page load timeout (seconds)
+  --resolution-x 1920 \             # Screenshot width
+  --resolution-y 1080               # Screenshot height
+
+# Screenshot with a specific Chrome path
+gowitness file -f urls.txt --chrome-path /usr/bin/chromium
+
+# Start the web server to review results
+gowitness server
+# Visit http://localhost:7171 to browse the gallery
+
+# Generate static HTML report
+gowitness report generate
+```
+
+### httpx Screenshots
+
+```bash
+# Screenshot all alive hosts
+cat hosts.txt | httpx -ss -srd ./screenshots/ -silent
+
+# Combined: probe + screenshot in one pass
+cat subdomains.txt | httpx -sc -title -tech-detect -ss -srd ./screenshots/ -o probed.txt
+```
+
+### EyeWitness
+
+```bash
+# Web screenshot mode
+python3 EyeWitness.py -f urls.txt --web -d eyewitness_output/
+
+# With custom timeout and threads
+python3 EyeWitness.py -f urls.txt --web -d output/ --timeout 30 --threads 10
+
+# RDP screenshot mode (for internal networks)
+python3 EyeWitness.py -f rdp_targets.txt --rdp -d rdp_output/
+```
+
+### Aquatone
+
+```bash
+# Basic usage (pipe from httpx or other tools)
+cat hosts.txt | aquatone -out ./aquatone_results/ -threads 5
+
+# With custom ports
+cat hosts.txt | aquatone -out ./aquatone_results/ -ports 80,443,8080,8443
+
+# With proxy
+cat hosts.txt | aquatone -out ./aquatone_results/ -proxy http://127.0.0.1:8080
+```
+
+## What to Look For
+
+When reviewing screenshots, prioritize these findings:
+
+| Visual Indicator | Significance |
+|-----------------|--------------|
+| Login pages | Authentication testing, brute-force, default creds |
+| Admin panels | Privilege escalation, default credentials |
+| Default pages (Apache, Nginx, IIS, Tomcat) | Misconfiguration, known CVEs |
+| Error pages with stack traces | Information disclosure, technology fingerprinting |
+| API documentation (Swagger, GraphQL Playground) | Full API attack surface revealed |
+| Dashboards (Grafana, Kibana, Jenkins) | Unauthenticated access, sensitive data |
+| File listing / directory index | Information disclosure, sensitive files |
+| Forgotten/staging applications | Weaker security, debug features enabled |
+| Custom 403/404 pages | Different backend, potential bypass |
+| Blank/empty pages | May hide API endpoints, worth fuzzing |
+
+## Tips & Edge Cases
+
+- Always ensure Chrome/Chromium is installed before running any screenshot tool; headless mode requires it
+- httpx `-ss` is the fastest option when you are already running httpx for probing -- no need for a separate tool
+- GoWitness provides the best gallery view for manual triage with its built-in web server
+- For very large target lists (10k+), run in batches to avoid resource exhaustion
+- Some targets load slowly -- increase timeout to at least 15-20 seconds for reliable capture
+- Compare screenshots over time to detect changes (new features, removed functionality, environment drift)
+- Screenshots of 403 pages are valuable -- different visual layouts suggest different backend handling
+- Use aquatone's clustering feature to group similar-looking pages and focus on unique ones
+- Save screenshots alongside probing data (status code, title, tech) for faster triage
+
+## Output Format
 
 ```
-# https://github.com/sensepost/gowitness
-gowitness file -f websites.txt -t <threads> 
+screenshots/
+  gowitness.sqlite3             # GoWitness database
+  report.html                   # Visual gallery report
+  screenshots/
+    https-target.com-443.png
+    https-admin.target.com-443.png
+    http-staging.target.com-8080.png
 ```
 
-## Other
+## References
 
-HttpX can be used ot capture screenshots
-
-```
-echo example.com | httpx -ss
-```
+- [gowitness - sensepost](https://github.com/sensepost/gowitness)
+- [httpx - ProjectDiscovery](https://github.com/projectdiscovery/httpx)
+- [EyeWitness - RedSiege](https://github.com/RedSiege/EyeWitness)
+- [aquatone - michenriksen](https://github.com/michenriksen/aquatone)

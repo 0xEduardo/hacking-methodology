@@ -1,23 +1,216 @@
-## Waybackmachine & others
+# Third-Party Service Enumeration
 
-Use gau to search for old files and paths from crawl websites
+> **Summary**: Discovers third-party services, exposed dashboards, admin panels, API documentation, and external integrations associated with the target organization.
+> **Goal**: Find forgotten or misconfigured services outside the main application -- cloud storage, CI/CD pipelines, monitoring dashboards, and API docs that may leak sensitive data or provide unauthenticated access.
+
+## Methodology
+
+### When to Use
+
+- During the reconnaissance phase to expand the attack surface beyond the main web application
+- After subdomain enumeration to investigate what services each subdomain hosts
+- When looking for shadow IT, forgotten infrastructure, or developer tools left exposed
+- To find API documentation (Swagger, GraphQL Playground) that reveals the full API surface
+- When hunting for credentials, tokens, or sensitive data exposed through third-party platforms
+
+### Step-by-Step
+
+1. **Search Wayback Machine and archives** -- find historical URLs, old paths, and forgotten endpoints
+   - Success criteria: list of URLs from archive sources including old admin panels, dashboards, and API docs
+2. **Query threat intelligence platforms** -- check AlienVault OTX, VirusTotal, and Shodan for associated URLs
+   - Success criteria: additional URLs and IPs associated with the target
+3. **Scrape cloud infrastructure** -- identify AWS, Azure, and GCP resources tied to the organization
+   - Success criteria: cloud storage buckets, functions, and services mapped
+4. **Search for exposed dashboards** -- find monitoring, CI/CD, and management panels
+   - Success criteria: list of exposed dashboards with access status (authenticated vs. open)
+5. **Search for leaked data** -- check paste sites, GitHub, and data breach databases
+   - Success criteria: any credentials, API keys, or internal information found
+
+## Tools & Commands
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| gau | `echo "<TARGET_DOMAIN>" \| gau --subs` | Historical URLs from Wayback, CommonCrawl, OTX |
+| waymore | `waymore -i <TARGET_DOMAIN> -mode U` | Extended archive URL mining |
+| Shodan | `shodan search org:"<ORG_NAME>"` | Find all internet-facing assets by organization |
+| Shodan | `shodan search ssl:"<TARGET_DOMAIN>"` | Find hosts using target's TLS certificates |
+| Censys | `censys search "<TARGET_DOMAIN>"` | Certificate and host search |
+| awsScrape | `python3 awsScrape.py -t <TARGET_DOMAIN>` | Find AWS-hosted content via certificate scanning |
+| cloud_enum | `python3 cloud_enum.py -k <TARGET_KEYWORD>` | Enumerate cloud resources (AWS, Azure, GCP) |
+| S3Scanner | `python3 s3scanner.py --buckets-file buckets.txt` | Scan for open/misconfigured S3 buckets |
+| trufflehog | `trufflehog github --org=<TARGET_ORG>` | Scan GitHub org for leaked secrets |
+| GitDorker | `python3 GitDorker.py -t <GITHUB_TOKEN> -d dorks.txt -q <TARGET_DOMAIN>` | GitHub dork search for secrets |
+
+### Wayback Machine & Archives
 
 ```bash
-echo "example.com" | gau --subs
+# Get all known URLs from multiple sources
+echo "<TARGET_DOMAIN>" | gau --subs --o gau_results.txt
+
+# Extended archive mining with waymore
+waymore -i <TARGET_DOMAIN> -mode U -oU waymore_results.txt
+
+# Filter for interesting file types
+cat gau_results.txt | grep -iE "\.(json|xml|yaml|yml|conf|env|bak|sql|log|zip|tar|gz|config|properties|ini)$"
+
+# Filter for admin/dashboard paths
+cat gau_results.txt | grep -iE "admin|dashboard|panel|console|manage|monitor|grafana|kibana|jenkins|swagger|graphql|api-doc"
 ```
 
-## Alienvault
+### AlienVault OTX
 
-Look under Associated Urls
+Look under "Associated URLs" for a target domain:
 
-[https://otx.alienvault.com/indicator/domain/example.com](https://otx.alienvault.com/indicator/domain/example.com)
+```
+https://otx.alienvault.com/indicator/domain/<TARGET_DOMAIN>
+```
 
-## AWS Scraping
+### Cloud Resource Enumeration
 
-By visiting IP’s under AWS control and looking for certificates it is possible to find content owned by a company.
+```bash
+# AWS - find S3 buckets and services by certificate scanning
+# https://github.com/jhaddix/awsScrape/
+python3 awsScrape.py -t <TARGET_DOMAIN>
 
-[https://github.com/jhaddix/awsScrape/](https://github.com/jhaddix/awsScrape/)
+# Enumerate cloud resources across AWS, Azure, GCP
+# https://github.com/initstring/cloud_enum
+python3 cloud_enum.py -k <TARGET_KEYWORD> -k <TARGET_DOMAIN>
 
-# More
+# S3 bucket brute-force
+# Generate bucket name permutations
+echo "<TARGET_NAME>" | sed 's/$/-dev\n&-staging\n&-prod\n&-backup\n&-assets\n&-data\n&-logs/' > bucket_names.txt
+python3 s3scanner.py --buckets-file bucket_names.txt
 
-[https://leakix.net/](https://leakix.net/)
+# Azure blob storage
+# https://github.com/NetSPI/MicroBurst
+Invoke-EnumerateAzureBlobs -Base <TARGET_NAME>
+
+# GCP bucket enumeration
+# https://github.com/RhinoSecurityLabs/GCPBucketBrute
+python3 gcpbucketbrute.py -k <TARGET_KEYWORD> -w wordlist.txt
+```
+
+### Shodan & Censys Queries
+
+```bash
+# Shodan - search by organization name
+shodan search org:"<ORG_NAME>" --fields ip_str,port,hostnames
+
+# Shodan - search by SSL certificate
+shodan search ssl:"<TARGET_DOMAIN>" --fields ip_str,port,hostnames
+
+# Shodan - search by favicon hash
+shodan search http.favicon.hash:<HASH> --fields ip_str,port
+
+# Censys - certificate search
+censys search "<TARGET_DOMAIN>" --index certificates
+
+# Censys - host search
+censys search "services.tls.certificates.leaf.names: <TARGET_DOMAIN>"
+```
+
+### Exposed Dashboard & Panel Discovery
+
+Common dashboards to look for during recon:
+
+| Service | Default Path | What It Exposes |
+|---------|-------------|-----------------|
+| Swagger/OpenAPI | `/swagger-ui.html`, `/api-docs`, `/swagger.json` | Full API documentation |
+| GraphQL Playground | `/graphql`, `/graphiql`, `/__graphql` | Interactive GraphQL explorer |
+| Jenkins | `/jenkins`, port 8080 | CI/CD pipelines, build secrets |
+| Grafana | `/grafana`, port 3000 | Infrastructure metrics |
+| Kibana | `/kibana`, port 5601 | Application logs, sensitive data |
+| Prometheus | `/metrics`, port 9090 | Infrastructure metrics |
+| phpMyAdmin | `/phpmyadmin`, `/pma` | Database access |
+| Adminer | `/adminer.php` | Database access |
+| cPanel/WHM | port 2082, 2083, 2086, 2087 | Hosting control panel |
+| Tomcat Manager | `/manager/html`, port 8080 | Application deployment |
+| Spring Boot Actuator | `/actuator`, `/actuator/env`, `/actuator/health` | Config, env vars, health |
+| Webpack Dev Server | port 8080, 3000 | Source code, source maps |
+| Jupyter Notebook | port 8888 | Code execution |
+| Docker Registry | port 5000, `/v2/_catalog` | Container images |
+| Kubernetes Dashboard | port 8443 | Cluster management |
+| MinIO Console | port 9001 | Object storage |
+
+### Leak & Secret Search
+
+```bash
+# GitHub search for secrets
+trufflehog github --org=<TARGET_ORG>
+trufflehog github --repo=https://github.com/<TARGET_ORG>/<REPO>
+
+# GitHub dorking
+# https://github.com/obheda12/GitDorker
+python3 GitDorker.py -t <GITHUB_TOKEN> -d dorks.txt -q "<TARGET_DOMAIN>"
+
+# Manual GitHub dorks
+# Search: "<TARGET_DOMAIN>" password
+# Search: "<TARGET_DOMAIN>" api_key
+# Search: "<TARGET_DOMAIN>" secret
+# Search: "<TARGET_DOMAIN>" token
+
+# Paste site monitoring
+# https://github.com/d4rckh/pwnbin
+# Check: pastebin.com, ghostbin.co, rentry.co
+
+# Data breach search
+# https://leakix.net/
+# https://search.0t.rocks/
+# https://haveibeenpwned.com/
+```
+
+### Additional Resources
+
+```
+# LeakIX - search for exposed services and data leaks
+https://leakix.net/
+
+# Shodan search for target
+https://www.shodan.io/search?query=org%3A"<ORG_NAME>"
+
+# BuiltWith - technology profiling
+https://builtwith.com/<TARGET_DOMAIN>
+
+# SecurityTrails - historical DNS and subdomain data
+https://securitytrails.com/domain/<TARGET_DOMAIN>
+
+# PublicWWW - source code search engine
+https://publicwww.com/websites/"<TARGET_DOMAIN>"/
+```
+
+## Tips & Edge Cases
+
+- GAU and waymore frequently reveal old admin panels and API endpoints that were removed from the live site but still respond
+- AWS resources can be found by scanning certificate transparency logs for the target domain pattern
+- Shodan `ssl:` filter catches services running on non-standard ports with the target's TLS certificate
+- Spring Boot Actuator endpoints (`/actuator/env`, `/actuator/configprops`) often leak environment variables and secrets
+- Grafana, Kibana, and Jenkins instances are frequently left without authentication on internal or staging environments
+- Docker registries on port 5000 may allow anonymous pulls of container images containing secrets
+- Check for `.env`, `.git/config`, and `robots.txt` on every discovered dashboard URL
+- GitHub search is powerful -- search for the org name, domain, internal hostnames, and employee email domains
+- BuiltWith and Wappalyzer reveal third-party scripts, analytics, and tracking services that may be hijackable
+
+## Output Format
+
+```
+[Source]          [URL / Resource]                                    [Status]
+Wayback           https://admin.target.com/old-dashboard              200 - Open
+AlienVault        https://api.target.com/swagger.json                 200 - API Docs
+Shodan            93.184.216.34:8080 (Jenkins)                        200 - No Auth
+AWS Scrape        s3://target-backups.s3.amazonaws.com                Public
+GitHub            github.com/target-org/infra (AWS keys in .env)      Leaked
+LeakIX            Exposed Elasticsearch on 93.184.216.34:9200         No Auth
+```
+
+## References
+
+- [gau - lc](https://github.com/lc/gau)
+- [waymore - xnl-h4ck3r](https://github.com/xnl-h4ck3r/waymore)
+- [awsScrape - jhaddix](https://github.com/jhaddix/awsScrape/)
+- [cloud_enum - initstring](https://github.com/initstring/cloud_enum)
+- [trufflehog - trufflesecurity](https://github.com/trufflesecurity/trufflehog)
+- [GitDorker - obheda12](https://github.com/obheda12/GitDorker)
+- [LeakIX](https://leakix.net/)
+- [AlienVault OTX](https://otx.alienvault.com/)
+- [Shodan](https://www.shodan.io/)
+- [Censys](https://search.censys.io/)
